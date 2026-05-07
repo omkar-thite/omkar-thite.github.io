@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Design - Complete Study Notes</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --heading-color: #1a1a1a;
+            --code-bg: #f4f4f4;
+            --code-text: #333;
+            --border-color: #ddd;
+            --table-header-bg: #f0f0f0;
+            --blockquote-bg: #f9f9f9;
+            --blockquote-border: #3498db;
+            --link-color: #3498db;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e;
+            --text-color: #e0e0e0;
+            --heading-color: #ffffff;
+            --code-bg: #2d2d44;
+            --code-text: #e0e0e0;
+            --border-color: #444;
+            --table-header-bg: #2d2d44;
+            --blockquote-bg: #252540;
+            --blockquote-border: #5dade2;
+            --link-color: #5dade2;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.7;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            background-color: var(--code-bg);
+            color: var(--text-color);
+            font-size: 14px;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover { opacity: 0.8; }
+
+        h1 { color: var(--heading-color); font-size: 2.2em; margin: 30px 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
+        h2 { color: var(--heading-color); font-size: 1.6em; margin: 30px 0 15px 0; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+        h3 { color: var(--heading-color); font-size: 1.3em; margin: 25px 0 10px 0; }
+        h4 { color: var(--heading-color); font-size: 1.1em; margin: 20px 0 10px 0; }
+        p { margin: 15px 0; }
+        a { color: var(--link-color); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        code {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        pre code { padding: 0; background: none; }
+
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border: 1px solid var(--border-color); }
+        th { background-color: var(--table-header-bg); font-weight: 600; }
+
+        blockquote {
+            background-color: var(--blockquote-bg);
+            border-left: 4px solid var(--blockquote-border);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        ul, ol { margin: 15px 0; padding-left: 30px; }
+        li { margin: 8px 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 30px 0; }
+
+        .toc { background-color: var(--blockquote-bg); padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .toc h3 { margin-top: 0; }
+        .toc ol { margin-bottom: 0; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+    <h1>Database Design - Complete Study Notes</h1>
+    
+    <blockquote>
+        <p>Comprehensive revision notes covering all key concepts in database design</p>
+    </blockquote>
+
+    <div class="toc">
+        <h3>Table of Contents</h3>
+        <ol>
+            <li><a href="#oltp-vs-olap">OLTP vs OLAP</a></li>
+            <li><a href="#storing-data">Storing Data</a></li>
+            <li><a href="#database-design-fundamentals">Database Design Fundamentals</a></li>
+            <li><a href="#dimensional-modeling">Dimensional Modeling</a></li>
+            <li><a href="#star-and-snowflake-schema">Star and Snowflake Schema</a></li>
+            <li><a href="#normalization">Normalization</a></li>
+            <li><a href="#normal-forms">Normal Forms (1NF, 2NF, 3NF)</a></li>
+            <li><a href="#database-views">Database Views</a></li>
+            <li><a href="#materialized-views">Materialized Views</a></li>
+            <li><a href="#database-roles">Database Roles and Access Control</a></li>
+            <li><a href="#table-partitioning">Table Partitioning</a></li>
+            <li><a href="#data-integration">Data Integration</a></li>
+            <li><a href="#choosing-dbms">Choosing a DBMS</a></li>
+        </ol>
+    </div>
+
+    <hr>
+
+    <h2 id="oltp-vs-olap">1. OLTP vs OLAP</h2>
+
+    <h3>Key Question: How should we organize and manage data?</h3>
+    <p>The answer depends on <strong>how the data will be used</strong>. Different schemas, management options, and objects affect storage, access, query speeds, memory usage, and costs.</p>
+
+    <h3>OLTP (Online Transaction Processing)</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Support day-to-day operations</li>
+        <li><strong>Design:</strong> Application-oriented (e.g., bookkeeping)</li>
+        <li><strong>Data:</strong> Up-to-date, operational (current snapshot)</li>
+        <li><strong>Size:</strong> Gigabytes</li>
+        <li><strong>Queries:</strong> Simple transactions, frequent updates</li>
+        <li><strong>Users:</strong> Thousands (employees, customers)</li>
+    </ul>
+
+    <p><strong>Example OLTP Tasks:</strong></p>
+    <ul>
+        <li>Track and find book prices</li>
+        <li>Record customer transactions</li>
+        <li>Track employee hours</li>
+    </ul>
+
+    <h3>OLAP (Online Analytical Processing)</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Report and analyze data</li>
+        <li><strong>Design:</strong> Subject-oriented (e.g., quarterly sales analysis)</li>
+        <li><strong>Data:</strong> Consolidated, historical</li>
+        <li><strong>Size:</strong> Terabytes (archive)</li>
+        <li><strong>Queries:</strong> Complex aggregations, limited updates</li>
+        <li><strong>Users:</strong> Hundreds (analysts, data scientists)</li>
+    </ul>
+
+    <p><strong>Example OLAP Tasks:</strong></p>
+    <ul>
+        <li>Analyze most profitable books</li>
+        <li>Find most loyal customers</li>
+        <li>Determine employee of the month</li>
+    </ul>
+
+    <h3>Relationship Between OLTP and OLAP</h3>
+    <ul>
+        <li>OLTP data is pulled and cleaned to create OLAP data warehouses</li>
+        <li>OLAP analysis informs business practices, influencing OLTP operations</li>
+        <li>They need each other!</li>
+    </ul>
+
+    <blockquote>
+        <p>💡 <strong>Key Insight:</strong> Before implementing anything, determine if you need OLTP, OLAP, or both based on business requirements.</p>
+    </blockquote>
+
+    <hr>
+
+    <h2 id="storing-data">2. Storing Data</h2>
+
+    <h3>Data Structure Levels</h3>
+    <table>
+        <tr><th>Type</th><th>Description</th><th>Examples</th></tr>
+        <tr><td><strong>Structured</strong></td><td>Defined by schemas, data types, tables, relationships</td><td>SQL databases</td></tr>
+        <tr><td><strong>Unstructured</strong></td><td>Schemaless, raw form</td><td>Photos, chat logs, MP3s, raw text</td></tr>
+        <tr><td><strong>Semi-structured</strong></td><td>Self-describing, some structure</td><td>NoSQL, XML, JSON</td></tr>
+    </table>
+
+    <p><strong>Trade-off:</strong> Structured data is easier to analyze but less flexible/scalable. Unstructured data is more flexible but harder to analyze.</p>
+
+    <h3>Storage Solutions</h3>
+
+    <h4>Traditional Databases</h4>
+    <ul>
+        <li>Follow relational schema</li>
+        <li>Used for OLTP with real-time structured data</li>
+    </ul>
+
+    <h4>Data Warehouses</h4>
+    <ul>
+        <li>Optimized for <strong>read-only analytics (OLAP)</strong></li>
+        <li>Combine data from multiple sources</li>
+        <li>Use <strong>Massively Parallel Processing (MPP)</strong></li>
+        <li>Use dimensional modeling and denormalized schemas</li>
+        <li><strong>Examples:</strong> Amazon Redshift, Google BigQuery, Azure Data Warehouse</li>
+    </ul>
+
+    <h4>Data Mart</h4>
+    <ul>
+        <li>Subset of data warehouse</li>
+        <li>Dedicated to specific topic (Sales, HR, Marketing)</li>
+        <li>Easier departmental access</li>
+    </ul>
+
+    <h4>Data Lakes</h4>
+    <ul>
+        <li>Store <strong>all types of data</strong> at lower cost</li>
+        <li>Use object storage (cheaper than block/file storage)</li>
+        <li>Petabytes in size</li>
+        <li><strong>Schema-on-read</strong> (schema created when data is read)</li>
+        <li>Run big data analytics with Apache Spark, Hadoop</li>
+        <li><strong>Warning:</strong> Must be organized well or becomes a "data swamp"</li>
+    </ul>
+
+    <h3>ETL vs ELT</h3>
+    <table>
+        <tr><th>ETL</th><th>ELT</th></tr>
+        <tr><td>Transform before loading</td><td>Store in native form first</td></tr>
+        <tr><td>Traditional approach</td><td>Modern big data approach</td></tr>
+        <tr><td>Follows storage schema</td><td>Transform portions as needed</td></tr>
+    </table>
+
+    <hr>
+
+    <h2 id="database-design-fundamentals">3. Database Design Fundamentals</h2>
+
+    <h3>Core Concepts</h3>
+    <p><strong>Database Models:</strong> High-level specifications for database structure</p>
+    <ul>
+        <li>Most popular: <strong>Relational model</strong> (rows = records, columns = attributes)</li>
+        <li>Others: NoSQL, object-oriented, network model</li>
+    </ul>
+
+    <p><strong>Schemas:</strong> Database blueprint implementing the model</p>
+    <ul>
+        <li>Defines specific tables, fields, relationships, indexes, views</li>
+        <li>Must be respected when inserting data</li>
+    </ul>
+
+    <h3>Three Levels of Data Modeling</h3>
+    <table>
+        <tr><th>Level</th><th>Description</th><th>Tools</th></tr>
+        <tr><td><strong>Conceptual</strong></td><td>What database contains (entities, relationships, attributes)</td><td>ER diagrams, UML</td></tr>
+        <tr><td><strong>Logical</strong></td><td>How entities map to tables</td><td>Database models, schemas</td></tr>
+        <tr><td><strong>Physical</strong></td><td>How data is physically stored</td><td>Storage specifications</td></tr>
+    </table>
+
+    <hr>
+
+    <h2 id="dimensional-modeling">4. Dimensional Modeling</h2>
+
+    <h3>Overview</h3>
+    <ul>
+        <li>Adaptation of relational model <strong>specifically for data warehouses</strong></li>
+        <li>Optimized for <strong>OLAP queries</strong> (analyze, not update)</li>
+        <li>Uses <strong>star schema</strong></li>
+        <li>Easy to interpret and extend</li>
+    </ul>
+
+    <h3>Elements</h3>
+
+    <h4>Fact Tables</h4>
+    <ul>
+        <li>Hold <strong>key metrics</strong> that change often</li>
+        <li>Contain foreign keys to dimension tables</li>
+        <li>Decided by business use-case</li>
+    </ul>
+
+    <h4>Dimension Tables</h4>
+    <ul>
+        <li>Hold <strong>descriptive attributes</strong></li>
+        <li>Don't change as often</li>
+        <li>Expand on fact table attributes</li>
+    </ul>
+
+    <h3>SQL Example: Creating Dimension Tables</h3>
+    <pre><code>-- Create route dimension table
+CREATE TABLE route (
+    route_id INTEGER PRIMARY KEY,
+    route_name VARCHAR(160) NOT NULL,
+    city_name VARCHAR(160) NOT NULL,
+    distance_km FLOAT NOT NULL,
+    park_name VARCHAR(160) NOT NULL
+);
+
+-- Create week dimension table
+CREATE TABLE week (
+    week_id INTEGER PRIMARY KEY,
+    week INTEGER NOT NULL,
+    month VARCHAR(160) NOT NULL,
+    year INTEGER NOT NULL
+);</code></pre>
+
+    <hr>
+
+    <h2 id="star-and-snowflake-schema">5. Star and Snowflake Schema</h2>
+
+    <h3>Star Schema</h3>
+    <p>The simplest form of dimensional model.</p>
+    <p><strong>Characteristics:</strong></p>
+    <ul>
+        <li>Fact table at center</li>
+        <li>Dimension tables extend outward (like star points)</li>
+        <li>One-to-many relationships (one store → many sales)</li>
+    </ul>
+
+    <h3>Snowflake Schema</h3>
+    <p>Extension of star schema with <strong>normalized dimension tables</strong>.</p>
+    <p><strong>Key Differences:</strong></p>
+    <ul>
+        <li>Same fact table as star schema</li>
+        <li>Dimension tables are further normalized (broken into more tables)</li>
+        <li>More tables, more joins</li>
+    </ul>
+
+    <h3>Adding Foreign Keys</h3>
+    <pre><code>-- Add foreign key constraints
+ALTER TABLE fact_booksales ADD CONSTRAINT sales_book
+    FOREIGN KEY (book_id) REFERENCES dim_book_star (book_id);
+    
+ALTER TABLE fact_booksales ADD CONSTRAINT sales_time
+    FOREIGN KEY (time_id) REFERENCES dim_time_star (time_id);
+    
+ALTER TABLE fact_booksales ADD CONSTRAINT sales_store
+    FOREIGN KEY (store_id) REFERENCES dim_store_star (store_id);</code></pre>
+
+    <hr>
+
+    <h2 id="normalization">6. Normalization</h2>
+
+    <h3>Definition</h3>
+    <p>Technique that divides tables into smaller tables connected via relationships.</p>
+    <p><strong>Goal:</strong> Reduce redundancy and increase data integrity.</p>
+
+    <h3>Normalized vs Denormalized</h3>
+    <table>
+        <tr><th>Aspect</th><th>Normalized (Snowflake)</th><th>Denormalized (Star)</th></tr>
+        <tr><td>Tables</td><td>More tables</td><td>Fewer tables</td></tr>
+        <tr><td>Joins</td><td>More joins needed</td><td>Fewer joins</td></tr>
+        <tr><td>Query Speed</td><td>Slower reads</td><td>Faster reads</td></tr>
+        <tr><td>Storage</td><td>Less redundancy</td><td>More redundancy</td></tr>
+        <tr><td>Updates</td><td>Safer, simpler</td><td>Riskier</td></tr>
+        <tr><td>Best For</td><td>OLTP (write-intensive)</td><td>OLAP (read-intensive)</td></tr>
+    </table>
+
+    <h3>Benefits of Normalization</h3>
+    <ol>
+        <li><strong>Saves storage space</strong> (eliminates redundancy)</li>
+        <li><strong>Ensures data integrity</strong> - Enforces consistency, referential integrity</li>
+        <li><strong>Safer modifications</strong> - Less records to alter, update once, reflected everywhere</li>
+        <li><strong>Easier to extend</strong> - Smaller, organized tables</li>
+    </ol>
+
+    <hr>
+
+    <h2 id="normal-forms">7. Normal Forms (1NF, 2NF, 3NF)</h2>
+
+    <h3>Hierarchy (Least to Most Normalized)</h3>
+    <p>1NF → 2NF → 3NF → BCNF → 4NF → 5NF → 6NF</p>
+
+    <h3>First Normal Form (1NF)</h3>
+    <p><strong>Rules:</strong></p>
+    <ul>
+        <li>Each record must be unique (no duplicate rows)</li>
+        <li>Each cell must hold <strong>only one value</strong></li>
+    </ul>
+
+    <h3>Second Normal Form (2NF)</h3>
+    <p><strong>Rules:</strong></p>
+    <ul>
+        <li>Must satisfy 1NF</li>
+        <li>If primary key is single column → automatically 2NF</li>
+        <li>If composite primary key → each non-key column must depend on <strong>ALL</strong> keys</li>
+    </ul>
+
+    <h3>Third Normal Form (3NF)</h3>
+    <p><strong>Rules:</strong></p>
+    <ul>
+        <li>Must satisfy 2NF</li>
+        <li><strong>No transitive dependencies</strong> - non-key columns can't depend on other non-key columns</li>
+    </ul>
+
+    <h3>Data Anomalies (Why Normalize?)</h3>
+    <table>
+        <tr><th>Anomaly</th><th>Description</th><th>Example</th></tr>
+        <tr><td><strong>Update</strong></td><td>Inconsistency from redundant data updates</td><td>Changing city name in some records but not others</td></tr>
+        <tr><td><strong>Insertion</strong></td><td>Can't add records due to missing required data</td><td>Can't add student not enrolled in any course</td></tr>
+        <tr><td><strong>Deletion</strong></td><td>Unintentionally deletes other data</td><td>Deleting last course record loses student info</td></tr>
+    </table>
+
+    <blockquote>
+        <p>💡 <strong>3NF prevents all three types of anomalies!</strong></p>
+    </blockquote>
+
+    <hr>
+
+    <h2 id="database-views">8. Database Views</h2>
+
+    <h3>What is a View?</h3>
+    <ul>
+        <li>Virtual table defined by a stored query</li>
+        <li>Not stored in memory (only the query is stored)</li>
+        <li>Data comes from actual tables</li>
+        <li>Query like a regular table</li>
+    </ul>
+
+    <h3>Creating Views</h3>
+    <pre><code>CREATE VIEW view_name AS
+SELECT col1, col2
+FROM table_name
+WHERE condition;
+
+-- Example
+CREATE VIEW scifi_books AS
+SELECT title, author
+FROM books
+WHERE genre = 'science fiction';
+
+-- Query the view
+SELECT * FROM scifi_books;</code></pre>
+
+    <h3>Benefits of Views</h3>
+    <ol>
+        <li><strong>No storage overhead</strong> (except for query statement)</li>
+        <li><strong>Access control</strong> - restrict what users can see</li>
+        <li><strong>Mask complexity</strong> - simplify normalized schema queries</li>
+        <li><strong>Reusability</strong> - no need to retype common queries</li>
+    </ol>
+
+    <h3>Managing Views</h3>
+    <pre><code>-- Grant privileges
+GRANT UPDATE ON ratings TO PUBLIC;
+
+-- Revoke privileges
+REVOKE INSERT ON films FROM db_user;
+
+-- Drop view
+DROP VIEW view_name CASCADE;
+
+-- Redefine view
+CREATE OR REPLACE VIEW view_name AS new_query;</code></pre>
+
+    <hr>
+
+    <h2 id="materialized-views">9. Materialized Views</h2>
+
+    <h3>Comparison</h3>
+    <table>
+        <tr><th>Non-Materialized View</th><th>Materialized View</th></tr>
+        <tr><td>Virtual</td><td>Physically stored</td></tr>
+        <tr><td>Stores query</td><td>Stores query <strong>results</strong></td></tr>
+        <tr><td>Runs query each time</td><td>Query pre-computed</td></tr>
+        <tr><td>Always current</td><td>Need to refresh</td></tr>
+    </table>
+
+    <h3>When to Use Materialized Views</h3>
+    <ul>
+        <li>Queries with <strong>long execution time</strong></li>
+        <li>Underlying data <strong>doesn't change often</strong></li>
+        <li><strong>Data warehouses</strong> (OLAP - read-intensive)</li>
+        <li>Save on computational costs</li>
+    </ul>
+
+    <h3>Implementation in PostgreSQL</h3>
+    <pre><code>-- Create materialized view
+CREATE MATERIALIZED VIEW my_view AS 
+SELECT * FROM table;
+
+-- Refresh when data changes
+REFRESH MATERIALIZED VIEW my_view;</code></pre>
+
+    <hr>
+
+    <h2 id="database-roles">10. Database Roles and Access Control</h2>
+
+    <h3>What are Roles?</h3>
+    <ul>
+        <li>Manage database access permissions</li>
+        <li>Define privileges (login, create databases, write to tables)</li>
+        <li>Can be assigned to one or more users</li>
+        <li>Global across all databases in cluster</li>
+    </ul>
+
+    <h3>Creating Roles</h3>
+    <pre><code>-- Empty role
+CREATE ROLE data_analyst;
+
+-- Role with attributes
+CREATE ROLE intern WITH PASSWORD 'PasswordIntern!' VALID UNTIL '2020-01-01';
+
+-- Role that can create databases
+CREATE ROLE admin CREATEDB;
+
+-- Role with multiple abilities
+CREATE ROLE admin WITH CREATEDB CREATEROLE;</code></pre>
+
+    <h3>Grant and Revoke Privileges</h3>
+    <pre><code>-- Grant privileges
+GRANT UPDATE ON ratings TO data_analyst;
+GRANT UPDATE, INSERT ON long_reviews TO data_scientist;
+
+-- Revoke privileges
+REVOKE UPDATE ON ratings FROM data_analyst;
+REVOKE UPDATE, INSERT ON long_reviews FROM PUBLIC;</code></pre>
+
+    <hr>
+
+    <h2 id="table-partitioning">11. Table Partitioning</h2>
+
+    <h3>Why Partition?</h3>
+    <ul>
+        <li>Large tables (100GB+) become slow to query</li>
+        <li>Indexes don't fit in memory</li>
+        <li>Solution: Split table into smaller parts</li>
+    </ul>
+
+    <h3>Types of Partitioning</h3>
+
+    <h4>Vertical Partitioning</h4>
+    <p>Split by <strong>columns</strong></p>
+    <ul>
+        <li>Create separate table for rarely-queried columns</li>
+        <li>Link through shared key (id)</li>
+        <li>Can store cold data on slower medium</li>
+    </ul>
+
+    <h4>Horizontal Partitioning</h4>
+    <p>Split by <strong>rows</strong></p>
+    <ul>
+        <li>Commonly by timestamp or category</li>
+        <li>Each partition holds subset of rows</li>
+    </ul>
+
+    <h3>PostgreSQL Horizontal Partitioning</h3>
+    <pre><code>CREATE TABLE sales (
+    ...
+    timestamp DATE NOT NULL
+)
+PARTITION BY RANGE (timestamp);
+
+CREATE TABLE sales_2019_q1 PARTITION OF sales
+    FOR VALUES FROM ('2019-01-01') TO ('2019-03-31');
+
+CREATE TABLE sales_2019_q4 PARTITION OF sales
+    FOR VALUES FROM ('2019-10-01') TO ('2019-12-31');</code></pre>
+
+    <hr>
+
+    <h2 id="data-integration">12. Data Integration</h2>
+
+    <h3>Definition</h3>
+    <p>Combining data from various sources, formats, and technologies into a <strong>unified view</strong>.</p>
+
+    <h3>Use Cases</h3>
+    <ul>
+        <li><strong>360° customer view:</strong> All departments' data in one place</li>
+        <li><strong>Acquisitions:</strong> Combining company databases</li>
+        <li><strong>Legacy systems:</strong> Query all historical data at once</li>
+    </ul>
+
+    <h3>Best Practices</h3>
+    <ol>
+        <li><strong>Automated testing & alerts:</strong> Detect data corruption</li>
+        <li><strong>Security:</strong> Maintain original access restrictions</li>
+        <li><strong>Data governance/lineage:</strong> Know data origin and usage</li>
+    </ol>
+
+    <hr>
+
+    <h2 id="choosing-dbms">13. Choosing a DBMS</h2>
+
+    <h3>SQL DBMS (RDBMS)</h3>
+    <p><strong>Based on relational model</strong></p>
+    <p><strong>Examples:</strong> SQL Server, MySQL, PostgreSQL, Oracle SQL</p>
+    <p><strong>Best when:</strong></p>
+    <ul>
+        <li>Structured, unchanging data</li>
+        <li>Predefined schema benefits you</li>
+        <li>Data consistency is critical (e.g., accounting)</li>
+    </ul>
+
+    <h3>NoSQL DBMS</h3>
+    <p><strong>Non-relational, less structured</strong></p>
+    <p><strong>Best when:</strong></p>
+    <ul>
+        <li>Rapid growth, unclear schema</li>
+        <li>Large data quantities</li>
+        <li>Varying data structures</li>
+    </ul>
+
+    <h3>NoSQL Types</h3>
+    <table>
+        <tr><th>Type</th><th>Description</th><th>Use Case</th><th>Example</th></tr>
+        <tr><td><strong>Key-Value Store</strong></td><td>Key → Value pairs</td><td>Session management, shopping carts</td><td>Redis</td></tr>
+        <tr><td><strong>Document Store</strong></td><td>Structured documents (JSON)</td><td>Content management, blogs</td><td>MongoDB</td></tr>
+        <tr><td><strong>Columnar</strong></td><td>Data stored by columns</td><td>Big data analytics, speed-critical</td><td>Cassandra</td></tr>
+        <tr><td><strong>Graph</strong></td><td>Interconnected nodes</td><td>Social networks, recommendations</td><td>Neo4j</td></tr>
+    </table>
+
+    <hr>
+
+    <h2>Quick Reference Summary</h2>
+    <table>
+        <tr><th>Concept</th><th>Key Points</th></tr>
+        <tr><td>OLTP</td><td>Transactions, current data, many users, simple queries</td></tr>
+        <tr><td>OLAP</td><td>Analytics, historical data, fewer users, complex queries</td></tr>
+        <tr><td>Star Schema</td><td>Fact table + dimension tables, denormalized</td></tr>
+        <tr><td>Snowflake Schema</td><td>Star + normalized dimensions, more joins</td></tr>
+        <tr><td>1NF</td><td>Unique rows, atomic values</td></tr>
+        <tr><td>2NF</td><td>1NF + full functional dependency on composite key</td></tr>
+        <tr><td>3NF</td><td>2NF + no transitive dependencies</td></tr>
+        <tr><td>Views</td><td>Virtual tables, stored queries, access control</td></tr>
+        <tr><td>Materialized Views</td><td>Stored results, need refresh, OLAP-friendly</td></tr>
+        <tr><td>Partitioning</td><td>Split large tables for performance</td></tr>
+        <tr><td>Roles</td><td>Manage user permissions and access</td></tr>
+    </table>
+
+    <hr>
+
+    <p><em>Good luck with your exam! 📚</em></p>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.querySelector('.theme-toggle');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                btn.textContent = '🌙 Dark Mode';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.textContent = '☀️ Light Mode';
+            }
+        }
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.setAttribute('data-theme', 'dark');
+            document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
+        }
+    </script>
+</body>
+</html>

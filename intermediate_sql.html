@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intermediate SQL - Complete Notes</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --heading-color: #1a1a1a;
+            --code-bg: #f4f4f4;
+            --code-text: #333;
+            --border-color: #ddd;
+            --table-header-bg: #f0f0f0;
+            --blockquote-bg: #f9f9f9;
+            --blockquote-border: #3498db;
+            --link-color: #3498db;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e;
+            --text-color: #e0e0e0;
+            --heading-color: #ffffff;
+            --code-bg: #2d2d44;
+            --code-text: #e0e0e0;
+            --border-color: #444;
+            --table-header-bg: #2d2d44;
+            --blockquote-bg: #252540;
+            --blockquote-border: #5dade2;
+            --link-color: #5dade2;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.7; color: var(--text-color); background-color: var(--bg-color);
+            padding: 20px; max-width: 900px; margin: 0 auto; transition: all 0.3s ease;
+        }
+        .theme-toggle {
+            position: fixed; top: 20px; right: 20px; padding: 10px 20px; border: none;
+            border-radius: 25px; cursor: pointer; background-color: var(--code-bg);
+            color: var(--text-color); font-size: 14px; transition: all 0.3s ease; z-index: 1000;
+        }
+        .theme-toggle:hover { opacity: 0.8; }
+        h1 { color: var(--heading-color); font-size: 2.2em; margin: 30px 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
+        h2 { color: var(--heading-color); font-size: 1.6em; margin: 30px 0 15px 0; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+        h3 { color: var(--heading-color); font-size: 1.3em; margin: 25px 0 10px 0; }
+        h4 { color: var(--heading-color); font-size: 1.1em; margin: 20px 0 10px 0; }
+        p { margin: 15px 0; }
+        a { color: var(--link-color); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code { background-color: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 4px; font-family: 'Monaco', 'Consolas', monospace; font-size: 0.9em; }
+        pre { background-color: var(--code-bg); color: var(--code-text); padding: 15px; border-radius: 8px; overflow-x: auto; margin: 15px 0; border: 1px solid var(--border-color); }
+        pre code { padding: 0; background: none; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border: 1px solid var(--border-color); }
+        th { background-color: var(--table-header-bg); font-weight: 600; }
+        blockquote { background-color: var(--blockquote-bg); border-left: 4px solid var(--blockquote-border); padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        ul, ol { margin: 15px 0; padding-left: 30px; }
+        li { margin: 8px 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 30px 0; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+    <h1>Intermediate SQL - Complete Notes</h1>
+    <p>A comprehensive guide covering COUNT, filtering, aggregate functions, sorting, grouping, and more.</p>
+
+    <hr>
+
+    <h2>1. COUNT and DISTINCT</h2>
+
+    <h3>COUNT()</h3>
+    <p>Returns the number of records with values in a field.</p>
+    <pre><code>-- Count non-null values in a specific field
+SELECT COUNT(birthdate) AS count_birthdates
+FROM people;
+
+-- Count ALL records in a table (including nulls)
+SELECT COUNT(*) AS total_records
+FROM people;</code></pre>
+
+    <table>
+        <tr><th>Function</th><th>Description</th></tr>
+        <tr><td><code>COUNT(field_name)</code></td><td>Counts non-missing values in that field</td></tr>
+        <tr><td><code>COUNT(*)</code></td><td>Counts all records including rows with NULL values</td></tr>
+    </table>
+
+    <h3>DISTINCT</h3>
+    <p>Removes duplicates from results.</p>
+    <pre><code>-- Get unique languages
+SELECT DISTINCT language
+FROM films;</code></pre>
+
+    <h3>Combining COUNT and DISTINCT</h3>
+    <pre><code>SELECT COUNT(DISTINCT birthdate) AS count_distinct_birthdates
+FROM people;</code></pre>
+
+    <hr>
+
+    <h2>2. SQL Query Order of Execution</h2>
+    <p>SQL is <strong>not processed in the order it's written</strong>.</p>
+
+    <table>
+        <tr><th>Written Order</th><th>Execution Order</th></tr>
+        <tr><td>SELECT</td><td>FROM</td></tr>
+        <tr><td>FROM</td><td>WHERE</td></tr>
+        <tr><td>WHERE</td><td>GROUP BY</td></tr>
+        <tr><td>GROUP BY</td><td>HAVING</td></tr>
+        <tr><td>HAVING</td><td>SELECT</td></tr>
+        <tr><td>ORDER BY</td><td>ORDER BY</td></tr>
+        <tr><td>LIMIT</td><td>LIMIT</td></tr>
+    </table>
+
+    <p><strong>Important:</strong> Aliases defined in SELECT cannot be used in WHERE clause because WHERE executes first.</p>
+
+    <hr>
+
+    <h2>3. Debugging and SQL Style</h2>
+
+    <h3>Best Practices</h3>
+    <pre><code>-- Good formatting
+SELECT 
+    field_a, 
+    field_b,
+    field_c
+FROM table_name
+WHERE condition = value;</code></pre>
+
+    <ul>
+        <li><strong>Capitalize keywords:</strong> SELECT, FROM, WHERE, etc.</li>
+        <li><strong>Add newlines</strong> between clauses</li>
+        <li><strong>Indent field names</strong> for multiple SELECT fields</li>
+        <li><strong>Use semicolons</strong> at end of queries</li>
+        <li><strong>Avoid spaces in field names:</strong> use <code>release_year</code> not <code>release year</code></li>
+    </ul>
+
+    <hr>
+
+    <h2>4. Filtering with WHERE</h2>
+
+    <h3>Comparison Operators</h3>
+    <table>
+        <tr><th>Operator</th><th>Meaning</th></tr>
+        <tr><td><code>=</code></td><td>Equal to</td></tr>
+        <tr><td><code>&lt;&gt;</code> or <code>!=</code></td><td>Not equal to</td></tr>
+        <tr><td><code>&lt;</code></td><td>Less than</td></tr>
+        <tr><td><code>&gt;</code></td><td>Greater than</td></tr>
+        <tr><td><code>&lt;=</code></td><td>Less than or equal to</td></tr>
+        <tr><td><code>&gt;=</code></td><td>Greater than or equal to</td></tr>
+    </table>
+
+    <h3>Filtering Strings</h3>
+    <p>Use <strong>single quotes</strong> around string values:</p>
+    <pre><code>SELECT title
+FROM films 
+WHERE country = 'Japan';</code></pre>
+
+    <hr>
+
+    <h2>5. Multiple Criteria: AND, OR, BETWEEN</h2>
+
+    <h3>OR Operator</h3>
+    <p>Returns record if <strong>at least one</strong> condition is satisfied.</p>
+    <pre><code>-- ✅ Valid: specify field for each condition
+SELECT title
+FROM movies
+WHERE year = 1960 OR year = 1972;</code></pre>
+
+    <h3>AND Operator</h3>
+    <p>All conditions must be satisfied.</p>
+    <pre><code>SELECT title
+FROM movies
+WHERE year > 1994 AND year < 2000;</code></pre>
+
+    <h3>Combining AND & OR</h3>
+    <p><strong>Use parentheses</strong> to ensure correct execution order:</p>
+    <pre><code>SELECT title 
+FROM movies 
+WHERE (year = 1994 OR year = 1995)
+    AND (certified = 'PG' OR certified = 'R');</code></pre>
+
+    <h3>BETWEEN Operator</h3>
+    <p>Filter values within a range (inclusive of both ends).</p>
+    <pre><code>-- These are equivalent
+SELECT title FROM movies WHERE year >= 1994 AND year <= 2000;
+SELECT title FROM movies WHERE year BETWEEN 1994 AND 2000;</code></pre>
+
+    <blockquote>
+        <p><strong>Remember:</strong> BETWEEN is <strong>inclusive</strong> - includes both beginning and end values.</p>
+    </blockquote>
+
+    <hr>
+
+    <h2>6. Filtering Text: LIKE, NOT LIKE, IN</h2>
+
+    <h3>LIKE with Wildcards</h3>
+    <table>
+        <tr><th>Wildcard</th><th>Meaning</th></tr>
+        <tr><td><code>%</code></td><td>Matches zero, one, or more characters</td></tr>
+        <tr><td><code>_</code></td><td>Matches exactly one character</td></tr>
+    </table>
+
+    <pre><code>-- Names starting with 'Ade' (Adele, Adelaide, Aden...)
+SELECT name FROM people WHERE name LIKE 'Ade%';
+
+-- Exactly 3-letter names starting with 'Ev' (Eve, Eva...)
+SELECT name FROM people WHERE name LIKE 'Ev_';
+
+-- Names ending with 'r'
+SELECT name FROM people WHERE name LIKE '%r';</code></pre>
+
+    <h3>IN Operator</h3>
+    <p>Specify multiple values - cleaner than multiple OR conditions.</p>
+    <pre><code>-- Instead of multiple ORs
+SELECT title FROM films WHERE year IN (1920, 1930, 1960);
+
+-- With strings
+SELECT title FROM films WHERE country IN ('India', 'Germany');</code></pre>
+
+    <hr>
+
+    <h2>7. NULL Values</h2>
+
+    <p>NULL represents missing or unknown values.</p>
+    <pre><code>-- Find records with missing birthdates
+SELECT name FROM people WHERE birthdate IS NULL;
+
+-- Find records with non-null values
+SELECT COUNT(*) AS count_birthdates
+FROM people WHERE birthdate IS NOT NULL;</code></pre>
+
+    <blockquote>
+        <p><strong>Key Point:</strong> Cannot use <code>= NULL</code> (must use <code>IS NULL</code>)</p>
+    </blockquote>
+
+    <hr>
+
+    <h2>8. Aggregate Functions</h2>
+
+    <table>
+        <tr><th>Function</th><th>Description</th><th>Data Types</th></tr>
+        <tr><td><code>COUNT()</code></td><td>Count of non-null values</td><td>All types</td></tr>
+        <tr><td><code>AVG()</code></td><td>Average</td><td>Numeric only</td></tr>
+        <tr><td><code>SUM()</code></td><td>Total sum</td><td>Numeric only</td></tr>
+        <tr><td><code>MIN()</code></td><td>Minimum value</td><td>All types</td></tr>
+        <tr><td><code>MAX()</code></td><td>Maximum value</td><td>All types</td></tr>
+    </table>
+
+    <pre><code>SELECT AVG(budget) FROM films;      -- Average budget
+SELECT SUM(budget) FROM films;      -- Total budget
+SELECT MIN(budget) FROM films;      -- Lowest budget
+SELECT MAX(budget) FROM films;      -- Highest budget</code></pre>
+
+    <p><strong>Best Practice:</strong> Always use aliases with aggregate functions.</p>
+
+    <hr>
+
+    <h2>9. ROUND Function</h2>
+
+    <pre><code>ROUND(number_to_round, decimal_places)</code></pre>
+
+    <table>
+        <tr><th>Second Parameter</th><th>Rounding Position</th></tr>
+        <tr><td><code>2</code></td><td>Hundredths (0.01)</td></tr>
+        <tr><td><code>1</code></td><td>Tenths (0.1)</td></tr>
+        <tr><td><code>0</code> or omitted</td><td>Whole number</td></tr>
+        <tr><td><code>-1</code></td><td>Tens (10)</td></tr>
+        <tr><td><code>-3</code></td><td>Thousands (1000)</td></tr>
+    </table>
+
+    <pre><code>-- Round to 2 decimal places
+SELECT ROUND(AVG(budget), 2) AS avg_budget FROM films;
+
+-- Round to nearest hundred thousand
+SELECT ROUND(AVG(budget), -5) AS avg_budget FROM films;</code></pre>
+
+    <hr>
+
+    <h2>10. Arithmetic Operations</h2>
+
+    <table>
+        <tr><th>Operator</th><th>Operation</th></tr>
+        <tr><td><code>+</code></td><td>Addition</td></tr>
+        <tr><td><code>-</code></td><td>Subtraction</td></tr>
+        <tr><td><code>*</code></td><td>Multiplication</td></tr>
+        <tr><td><code>/</code></td><td>Division</td></tr>
+    </table>
+
+    <h3>Integer Division Gotcha</h3>
+    <pre><code>SELECT (4 / 3);      -- Returns 1 (integer division)
+SELECT (4.0 / 3.0);  -- Returns 1.3333... (decimal division)</code></pre>
+
+    <p><strong>Tip:</strong> Use decimals (e.g., <code>60.0</code>) when you need decimal results.</p>
+
+    <pre><code>-- Calculate profit for each film
+SELECT (gross - budget) AS profit FROM films;
+
+-- Duration in hours
+SELECT title, ROUND((duration / 60.0), 2) AS duration_hours
+FROM films;</code></pre>
+
+    <hr>
+
+    <h2>11. Sorting with ORDER BY</h2>
+
+    <pre><code>-- Ascending order (default): smallest to largest, A to Z
+SELECT title, budget FROM films ORDER BY budget;
+SELECT title, budget FROM films ORDER BY budget ASC;
+
+-- Descending order: largest to smallest, Z to A
+SELECT title, budget FROM films ORDER BY budget DESC;</code></pre>
+
+    <h3>Sorting by Multiple Fields</h3>
+    <pre><code>-- Sort by wins (desc), then by imdb_score (desc) as tie-breaker
+SELECT title, wins, imdb_score
+FROM films
+ORDER BY wins DESC, imdb_score DESC;</code></pre>
+
+    <hr>
+
+    <h2>12. Grouping with GROUP BY</h2>
+
+    <pre><code>SELECT certification, COUNT(title) AS title_count
+FROM films
+GROUP BY certification;</code></pre>
+
+    <h3>Rules for GROUP BY</h3>
+    <ol>
+        <li><strong>All non-aggregated fields in SELECT must be in GROUP BY</strong></li>
+        <li>GROUP BY creates groups, not ordering</li>
+    </ol>
+
+    <pre><code>-- ✅ Correct: include all non-aggregated fields
+SELECT country, release_year, COUNT(*) AS film_count
+FROM films
+GROUP BY country, release_year;</code></pre>
+
+    <p><strong>Execution Order:</strong> FROM → GROUP BY → SELECT → ORDER BY → LIMIT</p>
+
+    <hr>
+
+    <h2>13. Filtering Groups with HAVING</h2>
+
+    <p><strong>Cannot use WHERE with aggregate functions.</strong> Use HAVING instead.</p>
+
+    <pre><code>-- ✅ Valid: Use HAVING for aggregate filtering
+SELECT release_year, COUNT(title) AS title_count
+FROM films
+GROUP BY release_year
+HAVING COUNT(title) > 10;</code></pre>
+
+    <h3>WHERE vs HAVING</h3>
+    <table>
+        <tr><th>Clause</th><th>Filters</th><th>When Executed</th></tr>
+        <tr><td>WHERE</td><td>Individual records</td><td>Before GROUP BY</td></tr>
+        <tr><td>HAVING</td><td>Grouped records</td><td>After GROUP BY</td></tr>
+    </table>
+
+    <blockquote>
+        <p><strong>Note:</strong> Cannot use alias in HAVING (executes before SELECT)</p>
+    </blockquote>
+
+    <hr>
+
+    <h2>14. Complete Query Structure</h2>
+
+    <h3>Full Order of Execution</h3>
+    <pre><code>FROM        → Identify table
+WHERE       → Filter individual rows
+GROUP BY    → Group rows
+HAVING      → Filter groups
+SELECT      → Select/calculate columns
+ORDER BY    → Sort results
+LIMIT       → Limit output</code></pre>
+
+    <h3>Complete Example</h3>
+    <pre><code>SELECT 
+    release_year, 
+    AVG(budget) AS avg_budget, 
+    AVG(gross) AS avg_gross
+FROM films
+WHERE release_year > 1990           -- Filter rows first
+GROUP BY release_year               -- Group by year
+HAVING AVG(budget) > 60000000       -- Filter groups
+ORDER BY avg_gross DESC             -- Sort results
+LIMIT 1;                            -- Get top result</code></pre>
+
+    <hr>
+
+    <h2>Key Takeaways</h2>
+    <ol>
+        <li><strong>COUNT(*)</strong> counts all rows; <strong>COUNT(field)</strong> counts non-null values</li>
+        <li><strong>DISTINCT</strong> removes duplicates</li>
+        <li><strong>WHERE</strong> filters rows; <strong>HAVING</strong> filters groups</li>
+        <li><strong>BETWEEN</strong> is inclusive of both endpoints</li>
+        <li>Use <strong>parentheses</strong> when combining AND and OR</li>
+        <li><strong>NULL</strong> values require IS NULL / IS NOT NULL</li>
+        <li>Integer division returns integers; use decimals for decimal results</li>
+        <li><strong>Aliases</strong> cannot be used in WHERE (execution order)</li>
+        <li><strong>ORDER BY</strong> comes after GROUP BY</li>
+        <li>Always <strong>alias</strong> aggregate functions for clarity</li>
+    </ol>
+
+    <hr>
+    <p><em>Notes from DataCamp Intermediate SQL Course</em></p>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.querySelector('.theme-toggle');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                btn.textContent = '🌙 Dark Mode';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.textContent = '☀️ Light Mode';
+            }
+        }
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.setAttribute('data-theme', 'dark');
+            document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
+        }
+    </script>
+</body>
+</html>

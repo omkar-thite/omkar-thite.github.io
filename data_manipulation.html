@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Manipulation in SQL</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --heading-color: #1a1a1a;
+            --code-bg: #f4f4f4;
+            --code-text: #333;
+            --border-color: #ddd;
+            --table-header-bg: #f0f0f0;
+            --blockquote-bg: #f9f9f9;
+            --blockquote-border: #3498db;
+            --link-color: #3498db;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e;
+            --text-color: #e0e0e0;
+            --heading-color: #ffffff;
+            --code-bg: #2d2d44;
+            --code-text: #e0e0e0;
+            --border-color: #444;
+            --table-header-bg: #2d2d44;
+            --blockquote-bg: #252540;
+            --blockquote-border: #5dade2;
+            --link-color: #5dade2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.7;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            background-color: var(--code-bg);
+            color: var(--text-color);
+            font-size: 14px;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            opacity: 0.8;
+        }
+
+        h1 {
+            color: var(--heading-color);
+            font-size: 2.2em;
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        h2 {
+            color: var(--heading-color);
+            font-size: 1.6em;
+            margin: 30px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h3 {
+            color: var(--heading-color);
+            font-size: 1.3em;
+            margin: 25px 0 10px 0;
+        }
+
+        h4 {
+            color: var(--heading-color);
+            font-size: 1.1em;
+            margin: 20px 0 10px 0;
+        }
+
+        p {
+            margin: 15px 0;
+        }
+
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        code {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        pre code {
+            padding: 0;
+            background: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--table-header-bg);
+            font-weight: 600;
+        }
+
+        blockquote {
+            background-color: var(--blockquote-bg);
+            border-left: 4px solid var(--blockquote-border);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 30px 0;
+        }
+
+        .note {
+            background-color: var(--blockquote-bg);
+            border-left: 4px solid #f39c12;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .warning {
+            background-color: var(--blockquote-bg);
+            border-left: 4px solid #e74c3c;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .tip {
+            background-color: var(--blockquote-bg);
+            border-left: 4px solid #27ae60;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+    <h1>Data Manipulation in SQL - Revision Notes</h1>
+    
+    <blockquote>
+        <p>Comprehensive notes for exam preparation covering conditional logic, subqueries, CTEs, and window functions.</p>
+    </blockquote>
+
+    <hr>
+
+    <h2>1. Conditional Logic with CASE</h2>
+
+    <h3>Core Concept</h3>
+    <p>CASE statements bring <strong>if-then-else logic</strong> directly into SQL queries. They evaluate conditions sequentially and return a value when a condition is met.</p>
+
+    <p><strong>Structure:</strong></p>
+    <pre><code>CASE 
+    WHEN test_condition THEN output_if_true
+    WHEN another_test THEN another_output
+    ELSE fallback_value 
+END AS column_alias</code></pre>
+
+    <h3>Important Behaviors</h3>
+    <table>
+        <tr>
+            <th>Scenario</th>
+            <th>Result</th>
+        </tr>
+        <tr>
+            <td>No ELSE clause, no conditions match</td>
+            <td>Returns NULL</td>
+        </tr>
+        <tr>
+            <td>ELSE NULL specified</td>
+            <td>Same as above - returns NULL</td>
+        </tr>
+        <tr>
+            <td>Multiple conditions match</td>
+            <td>First matching condition wins</td>
+        </tr>
+    </table>
+
+    <h3>Practical Applications</h3>
+
+    <h4>1. Categorizing Data:</h4>
+    <p>Determine match outcomes based on goals:</p>
+    <pre><code>SELECT match_id,
+    CASE 
+        WHEN home_goal > away_goal THEN 'Home Victory'
+        WHEN home_goal < away_goal THEN 'Away Victory'
+        ELSE 'Draw'
+    END AS result
+FROM soccer.match;</code></pre>
+
+    <h4>2. Complex Conditions with AND/OR:</h4>
+    <p>Check both team identity and match result:</p>
+    <pre><code>SELECT date,
+    CASE 
+        WHEN hometeam_id = 8455 AND home_goal > away_goal THEN 'Team Won at Home'
+        WHEN awayteam_id = 8455 AND away_goal > home_goal THEN 'Team Won Away'
+        ELSE 'Did Not Win'
+    END AS team_performance
+FROM soccer.match
+WHERE hometeam_id = 8455 OR awayteam_id = 8455;</code></pre>
+
+    <h4>3. Using CASE as a Filter:</h4>
+    <p>Include the full CASE expression (without alias) in WHERE:</p>
+    <pre><code>SELECT season, date, home_goal, away_goal
+FROM soccer.match
+WHERE 
+    CASE 
+        WHEN hometeam_id = 9857 AND home_goal > away_goal THEN 'Victory'
+        WHEN awayteam_id = 9857 AND away_goal > home_goal THEN 'Victory'
+    END IS NOT NULL;</code></pre>
+
+    <h3>Aggregating with CASE</h3>
+
+    <p><strong>COUNT specific outcomes:</strong></p>
+    <pre><code>SELECT season,
+    COUNT(CASE WHEN home_goal > away_goal THEN 1 END) AS home_victories,
+    COUNT(CASE WHEN away_goal > home_goal THEN 1 END) AS away_victories
+FROM soccer.match
+GROUP BY season;</code></pre>
+
+    <p><strong>SUM for weighted counting:</strong></p>
+    <pre><code>SELECT country,
+    SUM(CASE WHEN result = 'win' THEN 1 ELSE 0 END) AS total_wins
+FROM results
+GROUP BY country;</code></pre>
+
+    <p><strong>AVG for percentages:</strong> Return 1 for success, 0 for failure</p>
+    <pre><code>SELECT team_name,
+    ROUND(AVG(CASE 
+        WHEN goals_for > goals_against THEN 1.0
+        WHEN goals_for < goals_against THEN 0.0
+    END) * 100, 1) AS win_percentage
+FROM team_stats
+GROUP BY team_name;</code></pre>
+
+    <div class="warning">
+        <p>⚠️ <strong>Key Point:</strong> When using AVG for percentages, specify both the success (1) AND failure (0) conditions explicitly, or NULLs will skew your results.</p>
+    </div>
+
+    <hr>
+
+    <h2>2. Subqueries</h2>
+
+    <h3>Overview</h3>
+    <p>A subquery is a query embedded within another query. Look for multiple SELECT keywords to identify them.</p>
+
+    <p><strong>Placement Options:</strong></p>
+    <ul>
+        <li><strong>WHERE clause</strong> → Filter by calculated values</li>
+        <li><strong>FROM clause</strong> → Create derived tables</li>
+        <li><strong>SELECT clause</strong> → Add computed columns</li>
+    </ul>
+
+    <h3>Subqueries in WHERE</h3>
+
+    <p><strong>Single Value (Scalar):</strong></p>
+    <p>Filter matches exceeding average goals:</p>
+    <pre><code>SELECT date, home_goal, away_goal
+FROM soccer.match
+WHERE (home_goal + away_goal) > 
+    (SELECT AVG(home_goal + away_goal) FROM soccer.match);</code></pre>
+
+    <p><strong>List of Values:</strong></p>
+    <p>Find teams that never played at home:</p>
+    <pre><code>SELECT team_long_name
+FROM soccer.team 
+WHERE team_api_id NOT IN
+    (SELECT DISTINCT hometeam_id FROM soccer.match);</code></pre>
+
+    <h3>Subqueries in FROM</h3>
+    <p>Creates a temporary derived table. <strong>Must always have an alias.</strong></p>
+
+    <p>Finding top performers:</p>
+    <pre><code>SELECT team_name, avg_score
+FROM (
+    SELECT 
+        t.team_long_name AS team_name,
+        AVG(m.home_goal) AS avg_score
+    FROM soccer.match m
+    JOIN soccer.team t ON m.hometeam_id = t.team_api_id
+    WHERE m.season = '2014/2015'
+    GROUP BY t.team_long_name
+) AS team_averages
+WHERE avg_score > 2.0
+ORDER BY avg_score DESC;</code></pre>
+
+    <h3>Subqueries in SELECT</h3>
+    <p>Returns a single scalar value added to each row.</p>
+
+    <p>Comparing individual values to averages:</p>
+    <pre><code>SELECT 
+    league_name,
+    total_goals,
+    total_goals - (SELECT AVG(total_goals) FROM league_stats) AS deviation_from_avg
+FROM league_stats;</code></pre>
+
+    <div class="warning">
+        <p>⚠️ <strong>Critical:</strong> Filters in the main query do NOT automatically apply to subqueries. Apply filters in BOTH locations for accurate results.</p>
+    </div>
+
+    <hr>
+
+    <h2>3. Correlated Subqueries</h2>
+
+    <h3>What Makes Them Different?</h3>
+    <table>
+        <tr>
+            <th>Aspect</th>
+            <th>Simple Subquery</th>
+            <th>Correlated Subquery</th>
+        </tr>
+        <tr>
+            <td>Execution</td>
+            <td>Runs once</td>
+            <td>Runs once per outer row</td>
+        </tr>
+        <tr>
+            <td>Dependencies</td>
+            <td>Standalone</td>
+            <td>References outer query</td>
+        </tr>
+        <tr>
+            <td>Performance</td>
+            <td>Generally faster</td>
+            <td>Can be slower on large datasets</td>
+        </tr>
+    </table>
+
+    <h3>Syntax Pattern</h3>
+    <p>The inner query references a column from the outer query:</p>
+    <pre><code>SELECT m.date, m.home_goal, m.away_goal
+FROM soccer.match AS m
+WHERE (m.home_goal + m.away_goal) > 
+    (SELECT AVG(sub.home_goal + sub.away_goal)
+     FROM soccer.match AS sub
+     WHERE sub.country_id = m.country_id);  -- Correlation here</code></pre>
+    <p>This finds matches where total goals exceed the country-specific average.</p>
+
+    <h3>Multi-Column Correlation</h3>
+    <p>Match on multiple criteria:</p>
+    <pre><code>SELECT country_id, season, home_goal, away_goal
+FROM soccer.match AS outer_m
+WHERE (home_goal + away_goal) = 
+    (SELECT MAX(sub.home_goal + sub.away_goal)
+     FROM soccer.match AS sub
+     WHERE outer_m.country_id = sub.country_id
+       AND outer_m.season = sub.season);</code></pre>
+
+    <hr>
+
+    <h2>4. Nested Subqueries</h2>
+
+    <p>For multi-step transformations, nest subqueries inside each other:</p>
+    <pre><code>SELECT 
+    month_num,
+    monthly_total,
+    monthly_total - avg_monthly AS difference
+FROM (
+    SELECT 
+        EXTRACT(MONTH FROM date) AS month_num,
+        SUM(home_goal + away_goal) AS monthly_total,
+        (SELECT AVG(monthly_sum) 
+         FROM (SELECT SUM(home_goal + away_goal) AS monthly_sum
+               FROM soccer.match
+               GROUP BY EXTRACT(MONTH FROM date)) AS inner_calc
+        ) AS avg_monthly
+    FROM soccer.match
+    GROUP BY EXTRACT(MONTH FROM date)
+) AS outer_calc;</code></pre>
+
+    <div class="tip">
+        <p>💡 <strong>Tip:</strong> Build nested queries step-by-step. Test each inner layer before adding the next.</p>
+    </div>
+
+    <hr>
+
+    <h2>5. Common Table Expressions (CTEs)</h2>
+
+    <h3>Benefits Over Subqueries</h3>
+    <ul>
+        <li><strong>Readability:</strong> Defined at the top, making logic clearer</li>
+        <li><strong>Performance:</strong> Computed once, stored in memory</li>
+        <li><strong>Reusability:</strong> Reference the same CTE multiple times</li>
+        <li><strong>Chainability:</strong> Later CTEs can reference earlier ones</li>
+    </ul>
+
+    <h3>Basic Syntax</h3>
+    <pre><code>WITH cte_name AS (
+    SELECT columns
+    FROM table
+    WHERE conditions
+)
+SELECT * FROM cte_name;</code></pre>
+
+    <h3>Multiple CTEs</h3>
+    <p>Separate with commas (no comma after the last one):</p>
+    <pre><code>WITH 
+high_scoring AS (
+    SELECT country_id, id 
+    FROM soccer.match 
+    WHERE (home_goal + away_goal) >= 8
+),
+low_scoring AS (
+    SELECT country_id, id 
+    FROM soccer.match 
+    WHERE (home_goal + away_goal) <= 1
+)
+SELECT 
+    c.name,
+    COUNT(h.id) AS exciting_matches,
+    COUNT(l.id) AS boring_matches
+FROM soccer.country c
+LEFT JOIN high_scoring h ON c.id = h.country_id
+LEFT JOIN low_scoring l ON c.id = l.country_id
+GROUP BY c.name;</code></pre>
+
+    <h3>CTEs with JOINs Inside</h3>
+    <pre><code>WITH match_details AS (
+    SELECT 
+        m.id,
+        m.date,
+        l.name AS league_name,
+        m.home_goal,
+        m.away_goal
+    FROM soccer.match m
+    JOIN soccer.league l ON m.country_id = l.country_id
+    WHERE m.season = '2014/2015'
+)
+SELECT league_name, COUNT(*) AS match_count
+FROM match_details
+WHERE (home_goal + away_goal) > 5
+GROUP BY league_name;</code></pre>
+
+    <hr>
+
+    <h2>6. Window Functions</h2>
+
+    <h3>Core Concept</h3>
+    <p>Window functions compute values across a set of rows related to the current row—<strong>without collapsing rows into groups</strong>.</p>
+
+    <table>
+        <tr>
+            <th>Regular Aggregation</th>
+            <th>Window Function</th>
+        </tr>
+        <tr>
+            <td><code>GROUP BY</code> required</td>
+            <td>No grouping needed</td>
+        </tr>
+        <tr>
+            <td>One row per group</td>
+            <td>All rows preserved</td>
+        </tr>
+        <tr>
+            <td><code>SUM(col)</code></td>
+            <td><code>SUM(col) OVER()</code></td>
+        </tr>
+    </table>
+
+    <h3>The OVER() Clause</h3>
+    <p>Empty OVER() applies the calculation across all rows:</p>
+    <pre><code>SELECT 
+    match_date,
+    goals_scored,
+    AVG(goals_scored) OVER() AS overall_average,
+    goals_scored - AVG(goals_scored) OVER() AS diff_from_avg
+FROM match_results;</code></pre>
+
+    <h3>RANK() Function</h3>
+    <p>Assigns rankings based on ORDER BY within OVER():</p>
+    <pre><code>SELECT 
+    team_name,
+    total_points,
+    RANK() OVER(ORDER BY total_points DESC) AS league_position
+FROM standings;</code></pre>
+
+    <blockquote>
+        <p><strong>Note:</strong> RANK() produces ties and gaps. Use DENSE_RANK() for consecutive numbers or ROW_NUMBER() for unique values.</p>
+    </blockquote>
+
+    <h3>PARTITION BY</h3>
+    <p>Creates separate "windows" for each partition:</p>
+    <pre><code>SELECT 
+    season,
+    team_name,
+    goals_scored,
+    AVG(goals_scored) OVER(PARTITION BY season) AS season_average
+FROM team_performance;</code></pre>
+
+    <p><strong>Multiple Partition Columns:</strong></p>
+    <pre><code>SELECT 
+    country,
+    season,
+    team_name,
+    goals,
+    SUM(goals) OVER(PARTITION BY country, season) AS country_season_total
+FROM results;</code></pre>
+
+    <h3>Sliding Window Frames</h3>
+    <p>Define a moving calculation window relative to current row.</p>
+
+    <p><strong>Keywords:</strong></p>
+    <ul>
+        <li><code>UNBOUNDED PRECEDING</code> → Start of partition</li>
+        <li><code>n PRECEDING</code> → n rows before current</li>
+        <li><code>CURRENT ROW</code> → Current row</li>
+        <li><code>n FOLLOWING</code> → n rows after current</li>
+        <li><code>UNBOUNDED FOLLOWING</code> → End of partition</li>
+    </ul>
+
+    <p><strong>Cumulative Sum:</strong></p>
+    <pre><code>SELECT 
+    game_date,
+    points_earned,
+    SUM(points_earned) OVER(
+        ORDER BY game_date 
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS cumulative_points
+FROM season_results;</code></pre>
+
+    <p><strong>3-Game Rolling Average:</strong></p>
+    <pre><code>SELECT 
+    game_date,
+    goals,
+    AVG(goals) OVER(
+        ORDER BY game_date
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+    ) AS three_game_avg
+FROM team_matches;</code></pre>
+
+    <hr>
+
+    <h2>7. Choosing the Right Approach</h2>
+
+    <table>
+        <tr>
+            <th>Technique</th>
+            <th>Best For</th>
+            <th>Watch Out For</th>
+        </tr>
+        <tr>
+            <td><strong>JOINs</strong></td>
+            <td>Combining related tables</td>
+            <td>Cartesian products with missing keys</td>
+        </tr>
+        <tr>
+            <td><strong>Simple Subqueries</strong></td>
+            <td>One-time calculations</td>
+            <td>Repeating complex subqueries</td>
+        </tr>
+        <tr>
+            <td><strong>Correlated Subqueries</strong></td>
+            <td>Row-by-row comparisons</td>
+            <td>Performance on large tables</td>
+        </tr>
+        <tr>
+            <td><strong>CTEs</strong></td>
+            <td>Complex multi-step logic</td>
+            <td>Over-engineering simple queries</td>
+        </tr>
+        <tr>
+            <td><strong>Window Functions</strong></td>
+            <td>Running totals, rankings</td>
+            <td>Not available in all databases</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <h2>8. Complete Example: Putting It All Together</h2>
+
+    <p><strong>Scenario:</strong> Identify Manchester United's defeats in 2014/2015, ranked by goal margin.</p>
+
+    <pre><code>WITH home_matches AS (
+    SELECT 
+        m.id,
+        t.team_long_name AS opponent,
+        m.home_goal AS mu_goals,
+        m.away_goal AS opponent_goals,
+        'Home' AS venue
+    FROM soccer.match m
+    JOIN soccer.team t ON m.awayteam_id = t.team_api_id
+    WHERE m.hometeam_id = (SELECT team_api_id FROM soccer.team WHERE team_long_name = 'Manchester United')
+      AND m.season = '2014/2015'
+      AND m.home_goal < m.away_goal
+),
+away_matches AS (
+    SELECT 
+        m.id,
+        t.team_long_name AS opponent,
+        m.away_goal AS mu_goals,
+        m.home_goal AS opponent_goals,
+        'Away' AS venue
+    FROM soccer.match m
+    JOIN soccer.team t ON m.hometeam_id = t.team_api_id
+    WHERE m.awayteam_id = (SELECT team_api_id FROM soccer.team WHERE team_long_name = 'Manchester United')
+      AND m.season = '2014/2015'
+      AND m.away_goal < m.home_goal
+),
+all_defeats AS (
+    SELECT * FROM home_matches
+    UNION ALL
+    SELECT * FROM away_matches
+)
+SELECT 
+    opponent,
+    venue,
+    mu_goals,
+    opponent_goals,
+    (opponent_goals - mu_goals) AS goal_margin,
+    RANK() OVER(ORDER BY (opponent_goals - mu_goals) DESC) AS defeat_rank
+FROM all_defeats
+ORDER BY defeat_rank;</code></pre>
+
+    <hr>
+
+    <h2>Quick Reference Card</h2>
+
+    <pre><code>┌─────────────────────────────────────────────────────────┐
+│ CASE WHEN condition THEN result ELSE default END        │
+├─────────────────────────────────────────────────────────┤
+│ Subquery in WHERE: Single value or list for filtering   │
+│ Subquery in FROM:  Derived table (needs alias)          │
+│ Subquery in SELECT: Scalar value for each row           │
+├─────────────────────────────────────────────────────────┤
+│ Correlated: WHERE outer.col = inner.col                 │
+├─────────────────────────────────────────────────────────┤
+│ WITH cte AS (query), cte2 AS (query2) SELECT...         │
+├─────────────────────────────────────────────────────────┤
+│ function() OVER(PARTITION BY col ORDER BY col2)         │
+│ ROWS BETWEEN start AND end                              │
+└─────────────────────────────────────────────────────────┘</code></pre>
+
+    <hr>
+
+    <p><em>Last updated: January 2026</em></p>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.querySelector('.theme-toggle');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                btn.textContent = '🌙 Dark Mode';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.textContent = '☀️ Light Mode';
+            }
+        }
+
+        // Check for saved theme preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.setAttribute('data-theme', 'dark');
+            document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
+        }
+    </script>
+</body>
+</html>
