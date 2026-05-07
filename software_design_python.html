@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Engineering for Data Scientists in Python</title>
+    <style>
+        :root {
+            --bg-color: #ffffff; --text-color: #333333; --heading-color: #1a1a1a;
+            --code-bg: #f4f4f4; --code-text: #333; --border-color: #ddd;
+            --table-header-bg: #f0f0f0; --blockquote-bg: #f9f9f9;
+            --blockquote-border: #3498db; --link-color: #3498db;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e; --text-color: #e0e0e0; --heading-color: #ffffff;
+            --code-bg: #2d2d44; --code-text: #e0e0e0; --border-color: #444;
+            --table-header-bg: #2d2d44; --blockquote-bg: #252540;
+            --blockquote-border: #5dade2; --link-color: #5dade2;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.7; color: var(--text-color); background-color: var(--bg-color); padding: 20px; max-width: 900px; margin: 0 auto; transition: all 0.3s ease; }
+        .theme-toggle { position: fixed; top: 20px; right: 20px; padding: 10px 20px; border: none; border-radius: 25px; cursor: pointer; background-color: var(--code-bg); color: var(--text-color); font-size: 14px; z-index: 1000; }
+        h1 { color: var(--heading-color); font-size: 2.2em; margin: 30px 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
+        h2 { color: var(--heading-color); font-size: 1.6em; margin: 30px 0 15px 0; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+        h3 { color: var(--heading-color); font-size: 1.3em; margin: 25px 0 10px 0; }
+        p { margin: 15px 0; }
+        code { background-color: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 4px; font-family: 'Monaco', 'Consolas', monospace; font-size: 0.9em; }
+        pre { background-color: var(--code-bg); color: var(--code-text); padding: 15px; border-radius: 8px; overflow-x: auto; margin: 15px 0; border: 1px solid var(--border-color); }
+        pre code { padding: 0; background: none; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border: 1px solid var(--border-color); }
+        th { background-color: var(--table-header-bg); font-weight: 600; }
+        blockquote { background-color: var(--blockquote-bg); border-left: 4px solid var(--blockquote-border); padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        ul, ol { margin: 15px 0; padding-left: 30px; }
+        li { margin: 8px 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 30px 0; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+    <h1>Software Engineering for Data Scientists in Python</h1>
+    <p>Best practices for writing maintainable, modular, and well-documented Python code.</p>
+
+    <hr>
+
+    <h2>1. Software Engineering Concepts</h2>
+
+    <h3>Modularity</h3>
+    <p>Break code into smaller, logical, and reusable modules.</p>
+    <ul>
+        <li><strong>Functions:</strong> Group related operations</li>
+        <li><strong>Modules:</strong> Python files containing related functions</li>
+        <li><strong>Packages:</strong> Collections of modules in directories</li>
+    </ul>
+
+    <h3>Documentation</h3>
+    <p>Write clear documentation to explain code purpose and usage.</p>
+    <ul>
+        <li><strong>Comments:</strong> Inline explanations</li>
+        <li><strong>Docstrings:</strong> Function/class documentation</li>
+        <li><strong>README:</strong> Project-level documentation</li>
+    </ul>
+
+    <h3>Testing</h3>
+    <p>Verify code works as expected through automated tests.</p>
+
+    <hr>
+
+    <h2>2. Writing Python Modules</h2>
+
+    <h3>Module Structure</h3>
+    <pre><code># my_funcs.py
+
+def document_it(func):
+    """A decorator that prints function info."""
+    def wrapper(*args, **kwargs):
+        print(f'Running {func.__name__}')
+        return func(*args, **kwargs)
+    return wrapper
+
+@document_it
+def add(a, b):
+    """Add two numbers."""
+    return a + b</code></pre>
+
+    <h3>Importing Modules</h3>
+    <pre><code># Import entire module
+import my_funcs
+my_funcs.add(1, 2)
+
+# Import specific function
+from my_funcs import add
+add(1, 2)
+
+# Import with alias
+import my_funcs as mf
+mf.add(1, 2)</code></pre>
+
+    <hr>
+
+    <h2>3. Creating Python Packages</h2>
+
+    <h3>Package Structure</h3>
+    <pre><code>my_package/
+├── __init__.py      # Makes it a package
+├── module1.py
+├── module2.py
+└── subpackage/
+    ├── __init__.py
+    └── module3.py</code></pre>
+
+    <h3>__init__.py</h3>
+    <p>This file makes a directory a Python package. It can be empty or contain initialization code.</p>
+    <pre><code># my_package/__init__.py
+from .module1 import function1
+from .module2 import function2
+
+__all__ = ['function1', 'function2']</code></pre>
+
+    <h3>Importing from Packages</h3>
+    <pre><code>from my_package import function1
+from my_package.subpackage import module3</code></pre>
+
+    <hr>
+
+    <h2>4. PEP 8 Style Guide</h2>
+
+    <h3>Naming Conventions</h3>
+    <table>
+        <tr><th>Type</th><th>Convention</th><th>Example</th></tr>
+        <tr><td>Functions</td><td>snake_case</td><td><code>my_function()</code></td></tr>
+        <tr><td>Variables</td><td>snake_case</td><td><code>my_variable</code></td></tr>
+        <tr><td>Classes</td><td>PascalCase</td><td><code>MyClass</code></td></tr>
+        <tr><td>Constants</td><td>UPPER_CASE</td><td><code>MAX_VALUE</code></td></tr>
+        <tr><td>Modules</td><td>snake_case</td><td><code>my_module.py</code></td></tr>
+    </table>
+
+    <h3>Formatting Rules</h3>
+    <ul>
+        <li><strong>Indentation:</strong> 4 spaces (not tabs)</li>
+        <li><strong>Line length:</strong> Max 79 characters</li>
+        <li><strong>Blank lines:</strong> 2 between top-level definitions, 1 between methods</li>
+        <li><strong>Imports:</strong> One per line, grouped (stdlib, third-party, local)</li>
+    </ul>
+
+    <pre><code># Good
+import os
+import sys
+
+import numpy as np
+import pandas as pd
+
+from my_package import my_function</code></pre>
+
+    <h3>Checking Style with pycodestyle</h3>
+    <pre><code># Install
+pip install pycodestyle
+
+# Check a file
+pycodestyle my_script.py
+
+# Check with specific options
+pycodestyle --first my_script.py  # Show first occurrence only</code></pre>
+
+    <hr>
+
+    <h2>5. Writing Documentation</h2>
+
+    <h3>Comments</h3>
+    <pre><code># Single line comment
+
+# Multi-line comment
+# spanning several
+# lines
+
+x = 5  # Inline comment</code></pre>
+
+    <h3>Docstrings</h3>
+    <p>Use triple quotes for function documentation.</p>
+    <pre><code>def calculate_area(length, width):
+    """
+    Calculate the area of a rectangle.
+    
+    Parameters
+    ----------
+    length : float
+        The length of the rectangle.
+    width : float
+        The width of the rectangle.
+    
+    Returns
+    -------
+    float
+        The area of the rectangle.
+    
+    Examples
+    --------
+    >>> calculate_area(5, 3)
+    15
+    """
+    return length * width</code></pre>
+
+    <h3>Accessing Docstrings</h3>
+    <pre><code># Access docstring
+print(calculate_area.__doc__)
+
+# Or use help
+help(calculate_area)</code></pre>
+
+    <hr>
+
+    <h2>6. Classes in Python</h2>
+
+    <h3>Basic Class Structure</h3>
+    <pre><code>class DataProcessor:
+    """A class for processing data."""
+    
+    # Class attribute (shared by all instances)
+    version = "1.0"
+    
+    def __init__(self, data):
+        """Initialize with data."""
+        self.data = data  # Instance attribute
+    
+    def process(self):
+        """Process the data."""
+        return [x * 2 for x in self.data]
+    
+    def __repr__(self):
+        """String representation."""
+        return f"DataProcessor(data={self.data})"</code></pre>
+
+    <h3>Using the Class</h3>
+    <pre><code>processor = DataProcessor([1, 2, 3])
+print(processor.process())  # [2, 4, 6]
+print(processor.version)    # 1.0
+print(processor)            # DataProcessor(data=[1, 2, 3])</code></pre>
+
+    <h3>Inheritance</h3>
+    <pre><code>class AdvancedProcessor(DataProcessor):
+    """Extended processor with additional features."""
+    
+    def __init__(self, data, multiplier=2):
+        super().__init__(data)  # Call parent __init__
+        self.multiplier = multiplier
+    
+    def process(self):
+        """Override parent method."""
+        return [x * self.multiplier for x in self.data]</code></pre>
+
+    <hr>
+
+    <h2>7. DRY Principle</h2>
+    <p><strong>D</strong>on't <strong>R</strong>epeat <strong>Y</strong>ourself - avoid code duplication.</p>
+
+    <h3>Bad Practice</h3>
+    <pre><code># Repeated code
+df1_clean = df1.dropna().reset_index(drop=True)
+df2_clean = df2.dropna().reset_index(drop=True)
+df3_clean = df3.dropna().reset_index(drop=True)</code></pre>
+
+    <h3>Good Practice</h3>
+    <pre><code>def clean_dataframe(df):
+    """Clean a dataframe."""
+    return df.dropna().reset_index(drop=True)
+
+df1_clean = clean_dataframe(df1)
+df2_clean = clean_dataframe(df2)
+df3_clean = clean_dataframe(df3)</code></pre>
+
+    <hr>
+
+    <h2>8. Unit Testing with pytest</h2>
+
+    <h3>Basic Test</h3>
+    <pre><code># test_functions.py
+from my_module import add
+
+def test_add_positive():
+    assert add(2, 3) == 5
+
+def test_add_negative():
+    assert add(-1, -1) == -2
+
+def test_add_zero():
+    assert add(0, 0) == 0</code></pre>
+
+    <h3>Running Tests</h3>
+    <pre><code># Run all tests
+pytest
+
+# Run specific file
+pytest test_functions.py
+
+# Run with verbose output
+pytest -v</code></pre>
+
+    <h3>Testing for Exceptions</h3>
+    <pre><code>import pytest
+
+def test_divide_by_zero():
+    with pytest.raises(ZeroDivisionError):
+        1 / 0</code></pre>
+
+    <hr>
+
+    <h2>9. Project Structure Best Practices</h2>
+
+    <h3>Recommended Layout</h3>
+    <pre><code>my_project/
+├── README.md
+├── requirements.txt
+├── setup.py
+├── my_package/
+│   ├── __init__.py
+│   ├── core.py
+│   └── utils.py
+├── tests/
+│   ├── __init__.py
+│   ├── test_core.py
+│   └── test_utils.py
+└── docs/
+    └── index.md</code></pre>
+
+    <h3>requirements.txt</h3>
+    <pre><code>numpy>=1.20.0
+pandas>=1.3.0
+pytest>=6.0.0</code></pre>
+
+    <h3>Installing Dependencies</h3>
+    <pre><code>pip install -r requirements.txt</code></pre>
+
+    <hr>
+
+    <h2>Quick Reference</h2>
+
+    <h3>Essential Commands</h3>
+    <table>
+        <tr><th>Command</th><th>Description</th></tr>
+        <tr><td><code>pycodestyle file.py</code></td><td>Check PEP 8 compliance</td></tr>
+        <tr><td><code>pytest</code></td><td>Run tests</td></tr>
+        <tr><td><code>pip install -e .</code></td><td>Install package in editable mode</td></tr>
+        <tr><td><code>python -c "import pkg; help(pkg)"</code></td><td>View package documentation</td></tr>
+    </table>
+
+    <h3>Best Practices Summary</h3>
+    <ol>
+        <li><strong>Follow PEP 8</strong> for consistent style</li>
+        <li><strong>Write docstrings</strong> for all functions and classes</li>
+        <li><strong>Use meaningful names</strong> for variables and functions</li>
+        <li><strong>Keep functions small</strong> and focused on one task</li>
+        <li><strong>Write tests</strong> for critical functionality</li>
+        <li><strong>Don't repeat yourself (DRY)</strong></li>
+        <li><strong>Use version control</strong> (Git)</li>
+        <li><strong>Document your code</strong> with README and comments</li>
+    </ol>
+
+    <hr>
+    <p><em>Notes compiled from DataCamp: Software Engineering for Data Scientists in Python</em></p>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.querySelector('.theme-toggle');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                btn.textContent = '🌙 Dark Mode';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.textContent = '☀️ Light Mode';
+            }
+        }
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.setAttribute('data-theme', 'dark');
+            document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
+        }
+    </script>
+</body>
+</html>

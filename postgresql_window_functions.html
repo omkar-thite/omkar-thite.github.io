@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostgreSQL Summary Stats and Window Functions</title>
+    <style>
+        :root {
+            --bg-color: #ffffff; --text-color: #333333; --heading-color: #1a1a1a;
+            --code-bg: #f4f4f4; --code-text: #333; --border-color: #ddd;
+            --table-header-bg: #f0f0f0; --blockquote-bg: #f9f9f9;
+            --blockquote-border: #3498db; --link-color: #3498db;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e; --text-color: #e0e0e0; --heading-color: #ffffff;
+            --code-bg: #2d2d44; --code-text: #e0e0e0; --border-color: #444;
+            --table-header-bg: #2d2d44; --blockquote-bg: #252540;
+            --blockquote-border: #5dade2; --link-color: #5dade2;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.7; color: var(--text-color); background-color: var(--bg-color); padding: 20px; max-width: 900px; margin: 0 auto; transition: all 0.3s ease; }
+        .theme-toggle { position: fixed; top: 20px; right: 20px; padding: 10px 20px; border: none; border-radius: 25px; cursor: pointer; background-color: var(--code-bg); color: var(--text-color); font-size: 14px; z-index: 1000; }
+        h1 { color: var(--heading-color); font-size: 2.2em; margin: 30px 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
+        h2 { color: var(--heading-color); font-size: 1.6em; margin: 30px 0 15px 0; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+        h3 { color: var(--heading-color); font-size: 1.3em; margin: 25px 0 10px 0; }
+        p { margin: 15px 0; }
+        code { background-color: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 4px; font-family: 'Monaco', 'Consolas', monospace; font-size: 0.9em; }
+        pre { background-color: var(--code-bg); color: var(--code-text); padding: 15px; border-radius: 8px; overflow-x: auto; margin: 15px 0; border: 1px solid var(--border-color); }
+        pre code { padding: 0; background: none; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border: 1px solid var(--border-color); }
+        th { background-color: var(--table-header-bg); font-weight: 600; }
+        blockquote { background-color: var(--blockquote-bg); border-left: 4px solid var(--blockquote-border); padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        ul, ol { margin: 15px 0; padding-left: 30px; }
+        li { margin: 8px 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 30px 0; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+    <h1>PostgreSQL Summary Stats and Window Functions</h1>
+    <p>A comprehensive guide to window functions in PostgreSQL for data analysis and reporting.</p>
+
+    <hr>
+
+    <h2>1. Introduction to Window Functions</h2>
+
+    <h3>What are Window Functions?</h3>
+    <p>Window functions perform calculations across a set of rows that are <strong>related to the current row</strong>, without collapsing rows like <code>GROUP BY</code> does.</p>
+
+    <h3>Key Characteristics</h3>
+    <ul>
+        <li>Similar to aggregate functions but <strong>all rows remain in the output</strong></li>
+        <li>Operates on a "window" of rows defined by the <code>OVER()</code> clause</li>
+        <li>Can access values from other rows relative to the current row</li>
+    </ul>
+
+    <h3>Common Use Cases</h3>
+    <table>
+        <tr><th>Use Case</th><th>Description</th></tr>
+        <tr><td>Fetch previous/next values</td><td>Compare current row with adjacent rows</td></tr>
+        <tr><td>Running totals</td><td>Calculate cumulative sums</td></tr>
+        <tr><td>Moving averages</td><td>Smooth out data trends</td></tr>
+        <tr><td>Ranking</td><td>Assign ranks based on values</td></tr>
+        <tr><td>Growth calculations</td><td>Compare current vs previous periods</td></tr>
+    </table>
+
+    <h3>Basic Syntax</h3>
+    <pre><code>FUNCTION_NAME() OVER (
+    [PARTITION BY column]
+    [ORDER BY column]
+    [ROWS/RANGE BETWEEN ... AND ...]
+)</code></pre>
+
+    <hr>
+
+    <h2>2. ROW_NUMBER and ORDER BY</h2>
+
+    <h3>ROW_NUMBER()</h3>
+    <p>Assigns a unique sequential number to each row.</p>
+    <pre><code>SELECT year, event, country,
+    ROW_NUMBER() OVER() AS row_n
+FROM summer_medals
+WHERE medal = 'Gold';</code></pre>
+
+    <h3>ORDER BY Inside OVER</h3>
+    <pre><code>SELECT year, event, country,
+    ROW_NUMBER() OVER(ORDER BY year DESC) AS row_n
+FROM summer_medals
+WHERE medal = 'Gold';</code></pre>
+
+    <h3>Order of Execution</h3>
+    <ol>
+        <li><code>ORDER BY</code> inside <code>OVER()</code> executes <strong>first</strong> (assigns row numbers)</li>
+        <li><code>ORDER BY</code> outside <code>OVER()</code> executes <strong>second</strong> (sorts final output)</li>
+    </ol>
+
+    <hr>
+
+    <h2>3. PARTITION BY</h2>
+
+    <h3>What is PARTITION BY?</h3>
+    <p>Splits the table into partitions based on column values. Window functions operate <strong>separately</strong> on each partition.</p>
+
+    <h3>Key Behaviors</h3>
+    <ul>
+        <li><code>ROW_NUMBER()</code> resets to 1 for each partition</li>
+        <li><code>LAG()</code> only fetches values within the same partition</li>
+        <li>Similar to <code>GROUP BY</code> but rows don't collapse</li>
+    </ul>
+
+    <pre><code>SELECT 
+    year, event, champion,
+    LAG(champion, 1) OVER (
+        PARTITION BY event 
+        ORDER BY year
+    ) AS last_champion
+FROM discus_gold
+ORDER BY event, year;</code></pre>
+
+    <hr>
+
+    <h2>4. Fetching Functions</h2>
+
+    <table>
+        <tr><th>Function</th><th>Type</th><th>Description</th></tr>
+        <tr><td><code>LAG(col, n)</code></td><td>Relative</td><td>Returns value <code>n</code> rows <strong>before</strong> current row</td></tr>
+        <tr><td><code>LEAD(col, n)</code></td><td>Relative</td><td>Returns value <code>n</code> rows <strong>after</strong> current row</td></tr>
+        <tr><td><code>FIRST_VALUE(col)</code></td><td>Absolute</td><td>Returns <strong>first</strong> value in table/partition</td></tr>
+        <tr><td><code>LAST_VALUE(col)</code></td><td>Absolute</td><td>Returns <strong>last</strong> value in table/partition</td></tr>
+    </table>
+
+    <h3>LAG - Previous Row Value</h3>
+    <pre><code>SELECT year, champion,
+    LAG(champion, 1) OVER (ORDER BY year ASC) AS last_champion
+FROM discus_gold;</code></pre>
+
+    <h3>LEAD - Next Row Value</h3>
+    <pre><code>SELECT year, city,
+    LEAD(city, 1) OVER (ORDER BY year) AS next_city
+FROM hosts;</code></pre>
+
+    <h3>LAST_VALUE - Important Note</h3>
+    <blockquote>
+        <p>⚠️ <strong>Important:</strong> LAST_VALUE requires special frame syntax!</p>
+    </blockquote>
+    <pre><code>SELECT year, city,
+    LAST_VALUE(city) OVER (
+        ORDER BY year 
+        RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ) AS last_city
+FROM hosts;</code></pre>
+
+    <hr>
+
+    <h2>5. Ranking Functions</h2>
+
+    <table>
+        <tr><th>Function</th><th>Ties Handling</th><th>Skips Numbers?</th></tr>
+        <tr><td><code>ROW_NUMBER()</code></td><td>Assigns unique numbers</td><td>N/A</td></tr>
+        <tr><td><code>RANK()</code></td><td>Same rank for ties</td><td>Yes</td></tr>
+        <tr><td><code>DENSE_RANK()</code></td><td>Same rank for ties</td><td>No</td></tr>
+    </table>
+
+    <h3>Visual Example</h3>
+    <table>
+        <tr><th>Country</th><th>Games</th><th>ROW_NUMBER</th><th>RANK</th><th>DENSE_RANK</th></tr>
+        <tr><td>USA</td><td>27</td><td>1</td><td>1</td><td>1</td></tr>
+        <tr><td>France</td><td>26</td><td>2</td><td>2</td><td>2</td></tr>
+        <tr><td>Denmark</td><td>26</td><td>3</td><td>2</td><td>2</td></tr>
+        <tr><td>Italy</td><td>25</td><td>4</td><td><strong>4</strong></td><td><strong>3</strong></td></tr>
+    </table>
+
+    <pre><code>SELECT country, games,
+    ROW_NUMBER() OVER (ORDER BY games DESC) AS row_n,
+    RANK() OVER (ORDER BY games DESC) AS rank_n,
+    DENSE_RANK() OVER (ORDER BY games DESC) AS dense_rank_n
+FROM country_games;</code></pre>
+
+    <hr>
+
+    <h2>6. Paging with NTILE</h2>
+
+    <p><code>NTILE(n)</code> splits data into <code>n</code> approximately equal groups (pages).</p>
+
+    <h3>Use Cases</h3>
+    <ul>
+        <li>Pagination for APIs</li>
+        <li>Splitting into quartiles/thirds for analysis</li>
+        <li>Identifying top/middle/bottom performers</li>
+    </ul>
+
+    <pre><code>SELECT country, medals,
+    NTILE(3) OVER (ORDER BY medals DESC) AS third
+FROM country_medals;</code></pre>
+
+    <table>
+        <tr><th>Third Value</th><th>Meaning</th></tr>
+        <tr><td>1</td><td>Top 33%</td></tr>
+        <tr><td>2</td><td>Middle 33%</td></tr>
+        <tr><td>3</td><td>Bottom 33%</td></tr>
+    </table>
+
+    <hr>
+
+    <h2>7. Aggregate Window Functions</h2>
+
+    <p>Standard aggregate functions (<code>SUM</code>, <code>MAX</code>, <code>MIN</code>, <code>AVG</code>, <code>COUNT</code>) can be used with <code>OVER()</code>.</p>
+
+    <h3>Running/Cumulative Sum</h3>
+    <pre><code>SELECT year, medals,
+    SUM(medals) OVER (ORDER BY year) AS running_total
+FROM brazil_medals;</code></pre>
+
+    <h3>Partitioned Aggregates</h3>
+    <pre><code>SELECT year, country, medals,
+    SUM(medals) OVER (
+        PARTITION BY country 
+        ORDER BY year
+    ) AS country_running_total
+FROM gold_medals;</code></pre>
+
+    <hr>
+
+    <h2>8. Frames</h2>
+
+    <h3>What are Frames?</h3>
+    <p>Frames define <strong>which rows</strong> the window function uses as input.</p>
+
+    <h3>Frame Boundaries</h3>
+    <table>
+        <tr><th>Clause</th><th>Meaning</th></tr>
+        <tr><td><code>n PRECEDING</code></td><td>n rows before current row</td></tr>
+        <tr><td><code>CURRENT ROW</code></td><td>The current row</td></tr>
+        <tr><td><code>n FOLLOWING</code></td><td>n rows after current row</td></tr>
+        <tr><td><code>UNBOUNDED PRECEDING</code></td><td>First row of partition</td></tr>
+        <tr><td><code>UNBOUNDED FOLLOWING</code></td><td>Last row of partition</td></tr>
+    </table>
+
+    <h3>Frame Examples</h3>
+    <table>
+        <tr><th>Frame Definition</th><th>Rows Included</th></tr>
+        <tr><td><code>ROWS BETWEEN 3 PRECEDING AND CURRENT ROW</code></td><td>4 rows (current + 3 before)</td></tr>
+        <tr><td><code>ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING</code></td><td>3 rows</td></tr>
+        <tr><td><code>ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW</code></td><td>Running total (default)</td></tr>
+    </table>
+
+    <hr>
+
+    <h2>9. Moving Averages and Totals</h2>
+
+    <h3>Moving Average</h3>
+    <pre><code>SELECT year, medals,
+    AVG(medals) OVER (
+        ORDER BY year
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+    ) AS moving_avg_3yr
+FROM usa_golds;</code></pre>
+
+    <h3>Moving Total</h3>
+    <pre><code>SELECT year, medals,
+    SUM(medals) OVER (
+        ORDER BY year
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+    ) AS moving_total_3yr
+FROM usa_golds;</code></pre>
+
+    <hr>
+
+    <h2>10. Pivoting with CROSSTAB</h2>
+
+    <pre><code>CREATE EXTENSION IF NOT EXISTS tablefunc;
+
+SELECT * FROM CROSSTAB($$
+    SELECT country, year, COUNT(*) AS awards
+    FROM summer_medals
+    WHERE year IN (2008, 2012) AND medal = 'Gold'
+    GROUP BY country, year
+    ORDER BY country, year
+$$) AS ct (
+    country VARCHAR,
+    "2008" INTEGER,
+    "2012" INTEGER
+)
+ORDER BY country;</code></pre>
+
+    <hr>
+
+    <h2>11. ROLLUP and CUBE</h2>
+
+    <h3>ROLLUP</h3>
+    <p><strong>Hierarchical</strong> aggregation - de-aggregates from left to right.</p>
+    <pre><code>SELECT country, medal, COUNT(*) AS awards
+FROM summer_medals
+WHERE year = 2008
+GROUP BY ROLLUP(country, medal)
+ORDER BY country, medal;</code></pre>
+
+    <h3>CUBE</h3>
+    <p><strong>Non-hierarchical</strong> - generates <strong>all possible</strong> group-level aggregations.</p>
+    <pre><code>SELECT gender, medal, COUNT(*) AS awards
+FROM summer_medals
+WHERE year = 2012 AND country = 'RUS'
+GROUP BY CUBE(gender, medal);</code></pre>
+
+    <table>
+        <tr><th>Clause</th><th>Generates</th></tr>
+        <tr><td><code>ROLLUP(a, b)</code></td><td>(a,b), (a), ()</td></tr>
+        <tr><td><code>CUBE(a, b)</code></td><td>(a,b), (a), (b), ()</td></tr>
+    </table>
+
+    <hr>
+
+    <h2>12. Useful Functions</h2>
+
+    <h3>COALESCE - Replace NULLs</h3>
+    <p>Returns the first non-null value from left to right.</p>
+    <pre><code>SELECT
+    COALESCE(country, 'All countries') AS country,
+    COALESCE(medal, 'All medals') AS medal,
+    COUNT(*) AS awards
+FROM summer_medals
+WHERE year = 2008
+GROUP BY ROLLUP(country, medal);</code></pre>
+
+    <h3>STRING_AGG - Concatenate Values</h3>
+    <pre><code>SELECT STRING_AGG(country, ', ')
+FROM country_ranks
+WHERE rank <= 3;
+-- Result: "USA, RUS, AUS"</code></pre>
+
+    <hr>
+
+    <h2>Quick Reference Card</h2>
+
+    <h3>Window Function Syntax</h3>
+    <pre><code>FUNCTION() OVER (
+    PARTITION BY col1, col2    -- Optional: group rows
+    ORDER BY col3              -- Optional: order within partition
+    ROWS BETWEEN ... AND ...   -- Optional: define frame
+)</code></pre>
+
+    <h3>Common Functions Summary</h3>
+    <table>
+        <tr><th>Category</th><th>Functions</th></tr>
+        <tr><td>Numbering</td><td><code>ROW_NUMBER()</code></td></tr>
+        <tr><td>Ranking</td><td><code>RANK()</code>, <code>DENSE_RANK()</code></td></tr>
+        <tr><td>Fetching</td><td><code>LAG()</code>, <code>LEAD()</code>, <code>FIRST_VALUE()</code>, <code>LAST_VALUE()</code></td></tr>
+        <tr><td>Paging</td><td><code>NTILE()</code></td></tr>
+        <tr><td>Aggregates</td><td><code>SUM()</code>, <code>AVG()</code>, <code>MAX()</code>, <code>MIN()</code>, <code>COUNT()</code></td></tr>
+    </table>
+
+    <h3>Tips for Exams</h3>
+    <ol>
+        <li><strong>Window vs Aggregate:</strong> Window functions keep all rows; aggregates collapse them</li>
+        <li><strong>PARTITION BY:</strong> Like GROUP BY but doesn't collapse rows</li>
+        <li><strong>RANK vs DENSE_RANK:</strong> RANK skips numbers after ties, DENSE_RANK doesn't</li>
+        <li><strong>LAST_VALUE needs a frame:</strong> Use <code>RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING</code></li>
+        <li><strong>ROLLUP is hierarchical:</strong> Order of columns matters</li>
+        <li><strong>COALESCE for NULLs:</strong> First non-null value from list</li>
+    </ol>
+
+    <hr>
+    <p><em>Notes compiled from DataCamp: PostgreSQL Summary Stats and Window Functions</em></p>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.querySelector('.theme-toggle');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                btn.textContent = '🌙 Dark Mode';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.textContent = '☀️ Light Mode';
+            }
+        }
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.setAttribute('data-theme', 'dark');
+            document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
+        }
+    </script>
+</body>
+</html>

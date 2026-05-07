@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writing Functions in Python</title>
+    <style>
+        :root {
+            --bg-color: #ffffff; --text-color: #333333; --heading-color: #1a1a1a;
+            --code-bg: #f4f4f4; --code-text: #333; --border-color: #ddd;
+            --table-header-bg: #f0f0f0; --blockquote-bg: #f9f9f9;
+            --blockquote-border: #3498db; --link-color: #3498db;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e; --text-color: #e0e0e0; --heading-color: #ffffff;
+            --code-bg: #2d2d44; --code-text: #e0e0e0; --border-color: #444;
+            --table-header-bg: #2d2d44; --blockquote-bg: #252540;
+            --blockquote-border: #5dade2; --link-color: #5dade2;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.7; color: var(--text-color); background-color: var(--bg-color); padding: 20px; max-width: 900px; margin: 0 auto; transition: all 0.3s ease; }
+        .theme-toggle { position: fixed; top: 20px; right: 20px; padding: 10px 20px; border: none; border-radius: 25px; cursor: pointer; background-color: var(--code-bg); color: var(--text-color); font-size: 14px; z-index: 1000; }
+        h1 { color: var(--heading-color); font-size: 2.2em; margin: 30px 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
+        h2 { color: var(--heading-color); font-size: 1.6em; margin: 30px 0 15px 0; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+        h3 { color: var(--heading-color); font-size: 1.3em; margin: 25px 0 10px 0; }
+        p { margin: 15px 0; }
+        code { background-color: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 4px; font-family: 'Monaco', 'Consolas', monospace; font-size: 0.9em; }
+        pre { background-color: var(--code-bg); color: var(--code-text); padding: 15px; border-radius: 8px; overflow-x: auto; margin: 15px 0; border: 1px solid var(--border-color); }
+        pre code { padding: 0; background: none; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border: 1px solid var(--border-color); }
+        th { background-color: var(--table-header-bg); font-weight: 600; }
+        blockquote { background-color: var(--blockquote-bg); border-left: 4px solid var(--blockquote-border); padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        ul, ol { margin: 15px 0; padding-left: 30px; }
+        li { margin: 8px 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 30px 0; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+    <h1>Writing Functions in Python</h1>
+    <p>A comprehensive guide to writing effective, reusable, and well-documented Python functions.</p>
+
+    <hr>
+
+    <h2>1. Best Practices for Functions</h2>
+
+    <h3>Writing Good Docstrings</h3>
+    <p>Docstrings explain what a function does, its parameters, and what it returns.</p>
+
+    <h3>Google Style Docstrings</h3>
+    <pre><code>def function_name(param1, param2):
+    """Brief description of function.
+    
+    Args:
+        param1 (type): Description of param1.
+        param2 (type): Description of param2.
+    
+    Returns:
+        type: Description of return value.
+    
+    Raises:
+        ErrorType: When this error occurs.
+    
+    Examples:
+        >>> function_name(1, 2)
+        3
+    """
+    return param1 + param2</code></pre>
+
+    <h3>NumPy Style Docstrings</h3>
+    <pre><code>def function_name(param1, param2):
+    """
+    Brief description of function.
+    
+    Parameters
+    ----------
+    param1 : type
+        Description of param1.
+    param2 : type
+        Description of param2.
+    
+    Returns
+    -------
+    type
+        Description of return value.
+    
+    Examples
+    --------
+    >>> function_name(1, 2)
+    3
+    """
+    return param1 + param2</code></pre>
+
+    <h3>Accessing Docstrings</h3>
+    <pre><code># Using __doc__ attribute
+print(function_name.__doc__)
+
+# Using inspect module
+import inspect
+print(inspect.getdoc(function_name))</code></pre>
+
+    <hr>
+
+    <h2>2. Don't Repeat Yourself (DRY)</h2>
+
+    <p>Avoid writing the same code multiple times. Extract repeated logic into functions.</p>
+
+    <h3>Before (Repetitive)</h3>
+    <pre><code># Same logic repeated
+df1['new_col'] = df1['col1'] * 2 + df1['col2']
+df2['new_col'] = df2['col1'] * 2 + df2['col2']
+df3['new_col'] = df3['col1'] * 2 + df3['col2']</code></pre>
+
+    <h3>After (DRY)</h3>
+    <pre><code>def create_new_col(df):
+    """Create new column from col1 and col2."""
+    df['new_col'] = df['col1'] * 2 + df['col2']
+    return df
+
+df1 = create_new_col(df1)
+df2 = create_new_col(df2)
+df3 = create_new_col(df3)</code></pre>
+
+    <hr>
+
+    <h2>3. Do One Thing</h2>
+
+    <p>Each function should do one thing and do it well.</p>
+
+    <h3>Bad Practice</h3>
+    <pre><code>def process_and_save_and_email(data):
+    """Does too many things."""
+    cleaned = clean_data(data)
+    save_to_db(cleaned)
+    send_email("Data processed")
+    return cleaned</code></pre>
+
+    <h3>Good Practice</h3>
+    <pre><code>def clean_data(data):
+    """Clean the data."""
+    return cleaned_data
+
+def save_data(data):
+    """Save data to database."""
+    pass
+
+def notify_completion():
+    """Send notification email."""
+    pass</code></pre>
+
+    <hr>
+
+    <h2>4. Context Managers</h2>
+
+    <p>Context managers handle setup and teardown of resources automatically.</p>
+
+    <h3>Using with Statement</h3>
+    <pre><code># File handling with context manager
+with open('file.txt', 'r') as f:
+    content = f.read()
+# File is automatically closed</code></pre>
+
+    <h3>Creating Custom Context Managers</h3>
+
+    <h3>Using a Class</h3>
+    <pre><code>class Timer:
+    def __enter__(self):
+        self.start = time.time()
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.end = time.time()
+        print(f"Elapsed: {self.end - self.start:.2f}s")
+        return False  # Don't suppress exceptions
+
+# Usage
+with Timer():
+    time.sleep(1)</code></pre>
+
+    <h3>Using contextlib.contextmanager</h3>
+    <pre><code>from contextlib import contextmanager
+
+@contextmanager
+def timer():
+    """Context manager for timing code."""
+    start = time.time()
+    try:
+        yield  # Code in 'with' block runs here
+    finally:
+        end = time.time()
+        print(f"Elapsed: {end - start:.2f}s")
+
+# Usage
+with timer():
+    time.sleep(1)</code></pre>
+
+    <h3>Context Manager with Value</h3>
+    <pre><code>@contextmanager
+def database_connection(db_name):
+    """Manage database connection."""
+    conn = create_connection(db_name)
+    try:
+        yield conn  # Return connection to user
+    finally:
+        conn.close()
+
+with database_connection('mydb') as conn:
+    result = conn.execute('SELECT * FROM users')</code></pre>
+
+    <hr>
+
+    <h2>5. Scope and Closures</h2>
+
+    <h3>Variable Scope</h3>
+    <table>
+        <tr><th>Scope</th><th>Description</th><th>Keyword</th></tr>
+        <tr><td>Local</td><td>Inside the function</td><td>-</td></tr>
+        <tr><td>Enclosing</td><td>In outer function (nested)</td><td><code>nonlocal</code></td></tr>
+        <tr><td>Global</td><td>At module level</td><td><code>global</code></td></tr>
+        <tr><td>Built-in</td><td>Python built-ins</td><td>-</td></tr>
+    </table>
+
+    <h3>LEGB Rule</h3>
+    <p>Python searches for variables in this order: <strong>L</strong>ocal → <strong>E</strong>nclosing → <strong>G</strong>lobal → <strong>B</strong>uilt-in</p>
+
+    <h3>Using global</h3>
+    <pre><code>count = 0
+
+def increment():
+    global count
+    count += 1
+
+increment()
+print(count)  # 1</code></pre>
+
+    <h3>Closures</h3>
+    <p>A closure is a function that remembers values from its enclosing scope.</p>
+    <pre><code>def make_multiplier(n):
+    """Return a function that multiplies by n."""
+    def multiplier(x):
+        return x * n
+    return multiplier
+
+double = make_multiplier(2)
+triple = make_multiplier(3)
+
+print(double(5))  # 10
+print(triple(5))  # 15</code></pre>
+
+    <h3>Using nonlocal</h3>
+    <pre><code>def counter():
+    count = 0
+    def increment():
+        nonlocal count
+        count += 1
+        return count
+    return increment
+
+my_counter = counter()
+print(my_counter())  # 1
+print(my_counter())  # 2</code></pre>
+
+    <hr>
+
+    <h2>6. Decorators</h2>
+
+    <p>Decorators modify or enhance functions without changing their code.</p>
+
+    <h3>Basic Decorator</h3>
+    <pre><code>def my_decorator(func):
+    def wrapper(*args, **kwargs):
+        print("Before function")
+        result = func(*args, **kwargs)
+        print("After function")
+        return result
+    return wrapper
+
+@my_decorator
+def say_hello(name):
+    print(f"Hello, {name}!")
+
+say_hello("World")
+# Before function
+# Hello, World!
+# After function</code></pre>
+
+    <h3>Preserving Function Metadata</h3>
+    <pre><code>from functools import wraps
+
+def my_decorator(func):
+    @wraps(func)  # Preserves __name__, __doc__, etc.
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    return wrapper</code></pre>
+
+    <h3>Decorator with Arguments</h3>
+    <pre><code>def repeat(n_times):
+    """Decorator that repeats function n times."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for _ in range(n_times):
+                result = func(*args, **kwargs)
+            return result
+        return wrapper
+    return decorator
+
+@repeat(3)
+def say_hi():
+    print("Hi!")
+
+say_hi()
+# Hi!
+# Hi!
+# Hi!</code></pre>
+
+    <h3>Common Decorators</h3>
+
+    <h3>Timer Decorator</h3>
+    <pre><code>import time
+from functools import wraps
+
+def timer(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {end - start:.2f}s")
+        return result
+    return wrapper
+
+@timer
+def slow_function():
+    time.sleep(1)
+    
+slow_function()  # slow_function took 1.00s</code></pre>
+
+    <h3>Memoization Decorator</h3>
+    <pre><code>def memoize(func):
+    """Cache function results."""
+    cache = {}
+    @wraps(func)
+    def wrapper(*args):
+        if args not in cache:
+            cache[args] = func(*args)
+        return cache[args]
+    return wrapper
+
+@memoize
+def fibonacci(n):
+    if n < 2:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+
+print(fibonacci(100))  # Fast with memoization</code></pre>
+
+    <h3>Stacking Decorators</h3>
+    <pre><code>@decorator1
+@decorator2
+@decorator3
+def my_function():
+    pass
+
+# Equivalent to:
+# my_function = decorator1(decorator2(decorator3(my_function)))</code></pre>
+
+    <hr>
+
+    <h2>7. Function Arguments</h2>
+
+    <h3>*args and **kwargs</h3>
+    <pre><code>def flexible_function(*args, **kwargs):
+    """Accept any number of arguments."""
+    print(f"args: {args}")
+    print(f"kwargs: {kwargs}")
+
+flexible_function(1, 2, 3, name="Alice", age=30)
+# args: (1, 2, 3)
+# kwargs: {'name': 'Alice', 'age': 30}</code></pre>
+
+    <h3>Default Mutable Arguments - Danger!</h3>
+    <pre><code># BAD - mutable default argument
+def append_to(element, to=[]):
+    to.append(element)
+    return to
+
+print(append_to(1))  # [1]
+print(append_to(2))  # [1, 2] - Unexpected!
+
+# GOOD - use None as default
+def append_to(element, to=None):
+    if to is None:
+        to = []
+    to.append(element)
+    return to</code></pre>
+
+    <hr>
+
+    <h2>8. Quick Reference</h2>
+
+    <h3>Docstring Styles</h3>
+    <table>
+        <tr><th>Style</th><th>Used By</th></tr>
+        <tr><td>Google</td><td>Google, many projects</td></tr>
+        <tr><td>NumPy</td><td>NumPy, SciPy, pandas</td></tr>
+        <tr><td>Sphinx (reST)</td><td>Sphinx documentation</td></tr>
+    </table>
+
+    <h3>Context Manager Template</h3>
+    <pre><code>@contextmanager
+def my_context():
+    # Setup code
+    try:
+        yield resource  # Optional: yield value
+    finally:
+        # Teardown code</code></pre>
+
+    <h3>Decorator Template</h3>
+    <pre><code>from functools import wraps
+
+def my_decorator(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # Before
+        result = func(*args, **kwargs)
+        # After
+        return result
+    return wrapper</code></pre>
+
+    <h3>Decorator with Arguments Template</h3>
+    <pre><code>def my_decorator(arg):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator</code></pre>
+
+    <hr>
+
+    <h2>Best Practices Summary</h2>
+    <ol>
+        <li><strong>Write clear docstrings</strong> - Document parameters, returns, and examples</li>
+        <li><strong>DRY</strong> - Don't repeat yourself</li>
+        <li><strong>Single responsibility</strong> - Each function does one thing</li>
+        <li><strong>Use context managers</strong> - For resource management</li>
+        <li><strong>Use @wraps</strong> - Preserve function metadata in decorators</li>
+        <li><strong>Avoid mutable defaults</strong> - Use None instead</li>
+        <li><strong>Keep functions pure</strong> - Minimize side effects when possible</li>
+        <li><strong>Use closures</strong> - For encapsulating state</li>
+    </ol>
+
+    <hr>
+    <p><em>Notes compiled from DataCamp: Writing Functions in Python</em></p>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.querySelector('.theme-toggle');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                btn.textContent = '🌙 Dark Mode';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.textContent = '☀️ Light Mode';
+            }
+        }
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.setAttribute('data-theme', 'dark');
+            document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
+        }
+    </script>
+</body>
+</html>

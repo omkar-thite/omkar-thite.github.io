@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Functions for Manipulating Data in PostgreSQL</title>
+    <style>
+        :root {
+            --bg-color: #ffffff; --text-color: #333333; --heading-color: #1a1a1a;
+            --code-bg: #f4f4f4; --code-text: #333; --border-color: #ddd;
+            --table-header-bg: #f0f0f0; --blockquote-bg: #f9f9f9;
+            --blockquote-border: #3498db; --link-color: #3498db;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e; --text-color: #e0e0e0; --heading-color: #ffffff;
+            --code-bg: #2d2d44; --code-text: #e0e0e0; --border-color: #444;
+            --table-header-bg: #2d2d44; --blockquote-bg: #252540;
+            --blockquote-border: #5dade2; --link-color: #5dade2;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.7; color: var(--text-color); background-color: var(--bg-color); padding: 20px; max-width: 900px; margin: 0 auto; transition: all 0.3s ease; }
+        .theme-toggle { position: fixed; top: 20px; right: 20px; padding: 10px 20px; border: none; border-radius: 25px; cursor: pointer; background-color: var(--code-bg); color: var(--text-color); font-size: 14px; z-index: 1000; }
+        h1 { color: var(--heading-color); font-size: 2.2em; margin: 30px 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
+        h2 { color: var(--heading-color); font-size: 1.6em; margin: 30px 0 15px 0; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+        h3 { color: var(--heading-color); font-size: 1.3em; margin: 25px 0 10px 0; }
+        h4 { color: var(--heading-color); font-size: 1.1em; margin: 20px 0 10px 0; }
+        p { margin: 15px 0; }
+        code { background-color: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 4px; font-family: 'Monaco', 'Consolas', monospace; font-size: 0.9em; }
+        pre { background-color: var(--code-bg); color: var(--code-text); padding: 15px; border-radius: 8px; overflow-x: auto; margin: 15px 0; border: 1px solid var(--border-color); }
+        pre code { padding: 0; background: none; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border: 1px solid var(--border-color); }
+        th { background-color: var(--table-header-bg); font-weight: 600; }
+        blockquote { background-color: var(--blockquote-bg); border-left: 4px solid var(--blockquote-border); padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        ul, ol { margin: 15px 0; padding-left: 30px; }
+        li { margin: 8px 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 30px 0; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+    <h1>Functions for Manipulating Data in PostgreSQL</h1>
+    <p>A comprehensive guide covering data types, date/time functions, string manipulation, arrays, full-text search, and PostgreSQL extensions.</p>
+
+    <hr>
+
+    <h2>1. Common Data Types</h2>
+
+    <h3>Categories</h3>
+    <table>
+        <tr><th>Category</th><th>Data Types</th><th>Usage</th></tr>
+        <tr><td><strong>Text</strong></td><td><code>CHAR</code>, <code>VARCHAR</code>, <code>TEXT</code></td><td>Fixed/varying length strings</td></tr>
+        <tr><td><strong>Numeric</strong></td><td><code>INT</code>, <code>DECIMAL</code></td><td>Integers and real numbers</td></tr>
+        <tr><td><strong>Date/Time</strong></td><td><code>DATE</code>, <code>TIME</code>, <code>TIMESTAMP</code>, <code>INTERVAL</code></td><td>Temporal data</td></tr>
+        <tr><td><strong>Arrays</strong></td><td><code>type[]</code></td><td>Multi-dimensional arrays</td></tr>
+    </table>
+
+    <h3>Determining Data Types of Existing Columns</h3>
+    <pre><code>SELECT column_name, data_type
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE table_name = 'customer';</code></pre>
+
+    <hr>
+
+    <h2>2. Date and Time Data Types</h2>
+
+    <h3>TIMESTAMP</h3>
+    <ul>
+        <li>Contains <strong>both date and time</strong> with microsecond precision</li>
+        <li>Uses <strong>ISO 8601 format</strong>: <code>yyyy-mm-dd</code></li>
+    </ul>
+
+    <h3>INTERVAL</h3>
+    <p>Stores time as a <strong>period</strong> (years, months, days, hours, seconds).</p>
+    <pre><code>-- Calculate expected return date (3 days from rental)
+SELECT rental_date + INTERVAL '3 days' AS expected_return
+FROM rental;</code></pre>
+
+    <hr>
+
+    <h2>3. Working with Arrays</h2>
+
+    <h3>Creating Tables with Arrays</h3>
+    <pre><code>CREATE TABLE grades (
+    student_id INT,
+    email TEXT[][],
+    test_scores INT[][]
+);</code></pre>
+
+    <h3>Accessing Arrays</h3>
+    <blockquote>
+        <p>⚠️ <strong>PostgreSQL arrays start at index 1, not 0!</strong></p>
+    </blockquote>
+    <pre><code>SELECT 
+    email[1][1] AS email_type,
+    email[1][2] AS email_address,
+    test_scores[1]
+FROM grades;</code></pre>
+
+    <h3>Searching Arrays</h3>
+    <pre><code>-- Using ANY() Function
+SELECT title, special_features 
+FROM film 
+WHERE 'Trailers' = ANY(special_features);
+
+-- Using Contains Operator @>
+SELECT title, special_features 
+FROM film 
+WHERE special_features @> ARRAY['Deleted Scenes'];</code></pre>
+
+    <hr>
+
+    <h2>4. Date/Time Arithmetic</h2>
+
+    <table>
+        <tr><th>Operation</th><th>Result Type</th><th>Example</th></tr>
+        <tr><td><code>DATE - DATE</code></td><td><code>INTEGER</code> (days)</td><td><code>date '2024-05-12' - date '2024-05-11'</code> → <code>1</code></td></tr>
+        <tr><td><code>DATE + INTEGER</code></td><td><code>DATE</code></td><td><code>date '2024-05-12' + 3</code> → <code>2024-05-15</code></td></tr>
+        <tr><td><code>TIMESTAMP - TIMESTAMP</code></td><td><code>INTERVAL</code></td><td>Returns days and time difference</td></tr>
+    </table>
+
+    <h3>AGE() Function</h3>
+    <pre><code>SELECT AGE(return_date, rental_date) AS days_rented
+FROM rental;</code></pre>
+
+    <hr>
+
+    <h2>5. Retrieving Current Date/Time</h2>
+
+    <table>
+        <tr><th>Function</th><th>Returns</th></tr>
+        <tr><td><code>NOW()</code></td><td>Timestamp with timezone</td></tr>
+        <tr><td><code>CURRENT_TIMESTAMP</code></td><td>Same as NOW()</td></tr>
+        <tr><td><code>CURRENT_DATE</code></td><td>Date only</td></tr>
+        <tr><td><code>CURRENT_TIME</code></td><td>Time with timezone</td></tr>
+    </table>
+
+    <h3>Casting to Remove Timezone</h3>
+    <pre><code>SELECT NOW()::timestamp;
+SELECT CAST(NOW() AS timestamp);</code></pre>
+
+    <hr>
+
+    <h2>6. Extracting and Transforming Date/Time Data</h2>
+
+    <h3>EXTRACT() Function</h3>
+    <pre><code>SELECT EXTRACT(quarter FROM timestamp '2025-02-25 13:54:44') AS quarter;
+SELECT EXTRACT(dow FROM rental_date) AS day_of_week FROM rental;</code></pre>
+
+    <h3>DATE_TRUNC() Function</h3>
+    <pre><code>SELECT DATE_TRUNC('year', TIMESTAMP '2025-02-25 13:54:44');
+-- Result: 2025-01-01 00:00:00
+
+SELECT DATE_TRUNC('month', TIMESTAMP '2025-02-25 13:54:44');
+-- Result: 2025-02-01 00:00:00</code></pre>
+
+    <hr>
+
+    <h2>7. String Concatenation and Case Functions</h2>
+
+    <h3>String Concatenation</h3>
+    <pre><code>-- Using || Operator
+SELECT first_name || ' ' || last_name AS full_name FROM customer;
+
+-- Using CONCAT() Function
+SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM customer;</code></pre>
+
+    <h3>Case Functions</h3>
+    <table>
+        <tr><th>Function</th><th>Description</th><th>Example</th></tr>
+        <tr><td><code>UPPER(string)</code></td><td>Converts to uppercase</td><td><code>UPPER('hello')</code> → <code>'HELLO'</code></td></tr>
+        <tr><td><code>LOWER(string)</code></td><td>Converts to lowercase</td><td><code>LOWER('HELLO')</code> → <code>'hello'</code></td></tr>
+        <tr><td><code>INITCAP(string)</code></td><td>Converts to title case</td><td><code>INITCAP('hello world')</code> → <code>'Hello World'</code></td></tr>
+    </table>
+
+    <h3>REPLACE() Function</h3>
+    <pre><code>SELECT REPLACE(title, ' ', '_') AS title FROM film;</code></pre>
+
+    <hr>
+
+    <h2>8. Parsing String and Character Data</h2>
+
+    <h3>String Length Functions</h3>
+    <pre><code>SELECT CHAR_LENGTH(title) FROM film;
+SELECT LENGTH(title) FROM film;</code></pre>
+
+    <h3>Finding Character Position</h3>
+    <pre><code>SELECT email, POSITION('@' IN email) AS at_position FROM customer;</code></pre>
+
+    <h3>Extracting Substrings</h3>
+    <pre><code>-- First 50 characters
+SELECT LEFT(description, 50) FROM film;
+
+-- Last 50 characters
+SELECT RIGHT(description, 50) FROM film;
+
+-- Substring
+SELECT SUBSTRING(description, 10, 50) FROM film;</code></pre>
+
+    <h3>Practical Examples</h3>
+    <pre><code>-- Extract username from email
+SELECT LEFT(email, POSITION('@' IN email)-1) AS username FROM customer;
+
+-- Extract domain from email
+SELECT SUBSTRING(email FROM POSITION('@' IN email)+1) AS domain FROM customer;</code></pre>
+
+    <hr>
+
+    <h2>9. Truncating and Padding Strings</h2>
+
+    <h3>TRIM Functions</h3>
+    <table>
+        <tr><th>Function</th><th>Description</th></tr>
+        <tr><td><code>TRIM(string)</code></td><td>Removes whitespace from both ends</td></tr>
+        <tr><td><code>LTRIM(string)</code></td><td>Removes whitespace from left</td></tr>
+        <tr><td><code>RTRIM(string)</code></td><td>Removes whitespace from right</td></tr>
+    </table>
+
+    <h3>PAD Functions</h3>
+    <pre><code>SELECT LPAD('padded', 10, '#');  -- Result: '####padded'
+SELECT RPAD('padded', 10, '#');  -- Result: 'padded####'</code></pre>
+
+    <hr>
+
+    <h2>10. Full-Text Search</h2>
+
+    <h3>LIKE Operator</h3>
+    <table>
+        <tr><th>Wildcard</th><th>Meaning</th></tr>
+        <tr><td><code>%</code></td><td>Zero or more characters</td></tr>
+        <tr><td><code>_</code></td><td>Exactly one character</td></tr>
+    </table>
+
+    <h3>Full-Text Search Functions</h3>
+    <pre><code>SELECT title, description
+FROM film
+WHERE to_tsvector(title) @@ to_tsquery('elf');</code></pre>
+
+    <p><strong>Key Advantages over LIKE:</strong></p>
+    <ul>
+        <li>Case-insensitive</li>
+        <li>Accounts for word variations (lexemes)</li>
+        <li>Supports stemming and fuzzy matching</li>
+        <li>Better performance</li>
+    </ul>
+
+    <hr>
+
+    <h2>11. PostgreSQL Extensions</h2>
+
+    <h3>Managing Extensions</h3>
+    <pre><code>-- View available extensions
+SELECT name FROM pg_available_extensions;
+
+-- View enabled extensions
+SELECT extname FROM pg_extension;
+
+-- Enable an extension
+CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;</code></pre>
+
+    <h3>Common Extensions</h3>
+    <table>
+        <tr><th>Extension</th><th>Purpose</th></tr>
+        <tr><td><code>PostGIS</code></td><td>Location/spatial queries</td></tr>
+        <tr><td><code>fuzzystrmatch</code></td><td>String similarity (levenshtein)</td></tr>
+        <tr><td><code>pg_trgm</code></td><td>Trigram matching</td></tr>
+    </table>
+
+    <h3>Levenshtein Distance</h3>
+    <pre><code>SELECT levenshtein('GUMBO', 'GAMBOL');  -- Result: 2</code></pre>
+
+    <h3>Trigram Similarity</h3>
+    <pre><code>SELECT similarity('GUMBO', 'GAMBOL');  -- Result: 0.181818</code></pre>
+
+    <hr>
+
+    <h2>12. User-Defined Types and Functions</h2>
+
+    <h3>Creating ENUM Data Types</h3>
+    <pre><code>CREATE TYPE dayofweek AS ENUM (
+    'Monday', 'Tuesday', 'Wednesday', 
+    'Thursday', 'Friday', 'Saturday', 'Sunday'
+);</code></pre>
+
+    <h3>Creating User-Defined Functions</h3>
+    <pre><code>CREATE FUNCTION squared(i integer) RETURNS integer AS $$
+    BEGIN
+        RETURN i * i;
+    END;
+$$ LANGUAGE plpgsql;
+
+SELECT squared(10);  -- Returns 100</code></pre>
+
+    <hr>
+
+    <h2>Quick Reference Cheat Sheet</h2>
+
+    <h3>Date/Time Functions</h3>
+    <table>
+        <tr><th>Function</th><th>Purpose</th></tr>
+        <tr><td><code>NOW()</code> / <code>CURRENT_TIMESTAMP</code></td><td>Current timestamp with timezone</td></tr>
+        <tr><td><code>CURRENT_DATE</code></td><td>Current date</td></tr>
+        <tr><td><code>AGE(end, start)</code></td><td>Interval between timestamps</td></tr>
+        <tr><td><code>EXTRACT(field FROM source)</code></td><td>Extract subfield</td></tr>
+        <tr><td><code>DATE_TRUNC(precision, source)</code></td><td>Truncate to precision</td></tr>
+    </table>
+
+    <h3>String Functions</h3>
+    <table>
+        <tr><th>Function</th><th>Purpose</th></tr>
+        <tr><td><code>||</code> or <code>CONCAT()</code></td><td>Concatenate strings</td></tr>
+        <tr><td><code>UPPER()</code> / <code>LOWER()</code> / <code>INITCAP()</code></td><td>Change case</td></tr>
+        <tr><td><code>LENGTH()</code> / <code>CHAR_LENGTH()</code></td><td>String length</td></tr>
+        <tr><td><code>POSITION(sub IN str)</code></td><td>Find substring position</td></tr>
+        <tr><td><code>LEFT(str, n)</code> / <code>RIGHT(str, n)</code></td><td>Extract from ends</td></tr>
+        <tr><td><code>SUBSTRING(str, start, len)</code></td><td>Extract substring</td></tr>
+        <tr><td><code>TRIM()</code> / <code>LTRIM()</code> / <code>RTRIM()</code></td><td>Remove whitespace</td></tr>
+        <tr><td><code>LPAD()</code> / <code>RPAD()</code></td><td>Pad strings</td></tr>
+        <tr><td><code>REPLACE(str, find, replace)</code></td><td>Replace text</td></tr>
+    </table>
+
+    <hr>
+    <p><em>Last Updated: March 2025</em></p>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.querySelector('.theme-toggle');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                btn.textContent = '🌙 Dark Mode';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.textContent = '☀️ Light Mode';
+            }
+        }
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.setAttribute('data-theme', 'dark');
+            document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
+        }
+    </script>
+</body>
+</html>

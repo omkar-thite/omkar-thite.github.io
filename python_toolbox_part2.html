@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Data Science Toolbox (Part 2)</title>
+    <style>
+        :root {
+            --bg-color: #ffffff; --text-color: #333333; --heading-color: #1a1a1a;
+            --code-bg: #f4f4f4; --code-text: #333; --border-color: #ddd;
+            --table-header-bg: #f0f0f0; --blockquote-bg: #f9f9f9;
+            --blockquote-border: #3498db; --link-color: #3498db;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e; --text-color: #e0e0e0; --heading-color: #ffffff;
+            --code-bg: #2d2d44; --code-text: #e0e0e0; --border-color: #444;
+            --table-header-bg: #2d2d44; --blockquote-bg: #252540;
+            --blockquote-border: #5dade2; --link-color: #5dade2;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.7; color: var(--text-color); background-color: var(--bg-color); padding: 20px; max-width: 900px; margin: 0 auto; transition: all 0.3s ease; }
+        .theme-toggle { position: fixed; top: 20px; right: 20px; padding: 10px 20px; border: none; border-radius: 25px; cursor: pointer; background-color: var(--code-bg); color: var(--text-color); font-size: 14px; z-index: 1000; }
+        h1 { color: var(--heading-color); font-size: 2.2em; margin: 30px 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
+        h2 { color: var(--heading-color); font-size: 1.6em; margin: 30px 0 15px 0; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+        h3 { color: var(--heading-color); font-size: 1.3em; margin: 25px 0 10px 0; }
+        p { margin: 15px 0; }
+        code { background-color: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 4px; font-family: 'Monaco', 'Consolas', monospace; font-size: 0.9em; }
+        pre { background-color: var(--code-bg); color: var(--code-text); padding: 15px; border-radius: 8px; overflow-x: auto; margin: 15px 0; border: 1px solid var(--border-color); }
+        pre code { padding: 0; background: none; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border: 1px solid var(--border-color); }
+        th { background-color: var(--table-header-bg); font-weight: 600; }
+        blockquote { background-color: var(--blockquote-bg); border-left: 4px solid var(--blockquote-border); padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        ul, ol { margin: 15px 0; padding-left: 30px; }
+        li { margin: 8px 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 30px 0; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+    <h1>Python Data Science Toolbox (Part 2)</h1>
+    <p>A comprehensive guide to iterators, generators, and list comprehensions in Python.</p>
+
+    <hr>
+
+    <h2>1. Introduction to Iterators</h2>
+
+    <h3>What is an Iterable?</h3>
+    <p>An <strong>iterable</strong> is an object that has an associated <code>iter()</code> method. Examples: lists, strings, dictionaries, file connections, range objects.</p>
+
+    <h3>What is an Iterator?</h3>
+    <p>An <strong>iterator</strong> is an object that keeps state and produces the <strong>next value</strong> when you call <code>next()</code> on it.</p>
+
+    <pre><code>word = 'hello'
+
+# Create an iterator from an iterable
+it = iter(word)
+
+# Get next values
+print(next(it))  # 'h'
+print(next(it))  # 'e'
+print(next(it))  # 'l'
+print(next(it))  # 'l'
+print(next(it))  # 'o'
+print(next(it))  # StopIteration error</code></pre>
+
+    <h3>Iterating with *</h3>
+    <p>The <code>*</code> operator can unpack all remaining elements.</p>
+    <pre><code>word = 'data'
+it = iter(word)
+
+print(*it)  # d a t a</code></pre>
+
+    <hr>
+
+    <h2>2. enumerate() and zip()</h2>
+
+    <h3>enumerate()</h3>
+    <p>Returns an enumerate object that produces (index, element) pairs.</p>
+    <pre><code>names = ['Alice', 'Bob', 'Charlie']
+
+for index, name in enumerate(names):
+    print(index, name)
+# 0 Alice
+# 1 Bob
+# 2 Charlie
+
+# Start from a different index
+for index, name in enumerate(names, start=1):
+    print(index, name)
+# 1 Alice
+# 2 Bob
+# 3 Charlie</code></pre>
+
+    <h3>zip()</h3>
+    <p>Zips together multiple iterables into an iterator of tuples.</p>
+    <pre><code>names = ['Alice', 'Bob']
+ages = [25, 30]
+cities = ['NYC', 'LA']
+
+# Zip together
+zipped = zip(names, ages, cities)
+print(list(zipped))  # [('Alice', 25, 'NYC'), ('Bob', 30, 'LA')]
+
+# Unzip with *
+z = zip(names, ages)
+names2, ages2 = zip(*z)
+print(names2)  # ('Alice', 'Bob')
+print(ages2)   # (25, 30)</code></pre>
+
+    <hr>
+
+    <h2>3. Processing Large Files in Chunks</h2>
+
+    <h3>Reading with pandas in chunks</h3>
+    <pre><code>import pandas as pd
+
+# Read in chunks
+result = []
+for chunk in pd.read_csv('data.csv', chunksize=100):
+    # Process each chunk
+    result.append(sum(chunk['x']))
+
+total = sum(result)
+print(total)</code></pre>
+
+    <h3>Read specific columns only</h3>
+    <pre><code>df = pd.read_csv('data.csv', usecols=['x', 'y'])</code></pre>
+
+    <hr>
+
+    <h2>4. List Comprehensions</h2>
+
+    <h3>Basic Syntax</h3>
+    <pre><code># Collapse for loop into a single line
+nums = [12, 8, 21, 3, 16]
+
+new_nums = [num + 1 for num in nums]
+print(new_nums)  # [13, 9, 22, 4, 17]</code></pre>
+
+    <h3>Equivalence</h3>
+    <pre><code># For loop version
+new_nums = []
+for num in nums:
+    new_nums.append(num + 1)
+
+# List comprehension version
+new_nums = [num + 1 for num in nums]</code></pre>
+
+    <h3>Over range()</h3>
+    <pre><code>result = [num ** 2 for num in range(11)]
+# [0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100]</code></pre>
+
+    <h3>Nested Loops</h3>
+    <pre><code>pairs = [(num1, num2) for num1 in range(0, 2) for num2 in range(6, 8)]
+# [(0, 6), (0, 7), (1, 6), (1, 7)]</code></pre>
+
+    <hr>
+
+    <h2>5. Advanced List Comprehensions</h2>
+
+    <h3>Conditionals in List Comprehensions</h3>
+    <pre><code># If condition (filtering)
+[num ** 2 for num in range(10) if num % 2 == 0]
+# [0, 4, 16, 36, 64]
+
+# If-else (transformation)
+[num if num % 2 == 0 else 0 for num in range(10)]
+# [0, 0, 2, 0, 4, 0, 6, 0, 8, 0]</code></pre>
+
+    <blockquote>
+        <p><strong>Note:</strong> <code>if</code> alone goes at the end; <code>if-else</code> goes before the <code>for</code>.</p>
+    </blockquote>
+
+    <h3>Dictionary Comprehensions</h3>
+    <pre><code>pos_neg = {num: -num for num in range(9)}
+# {0: 0, 1: -1, 2: -2, 3: -3, ...}</code></pre>
+
+    <hr>
+
+    <h2>6. Introduction to Generator Expressions</h2>
+
+    <h3>Generator vs List Comprehension</h3>
+    <table>
+        <tr><th>List Comprehension</th><th>Generator Expression</th></tr>
+        <tr><td>Uses <code>[]</code></td><td>Uses <code>()</code></td></tr>
+        <tr><td>Returns a list</td><td>Returns a generator object</td></tr>
+        <tr><td>Stores all values in memory</td><td>Produces values on demand</td></tr>
+        <tr><td>Good for small datasets</td><td>Good for large datasets</td></tr>
+    </table>
+
+    <pre><code># List comprehension - stores in memory
+result = [num for num in range(1000000)]
+
+# Generator expression - lazy evaluation
+result = (num for num in range(1000000))</code></pre>
+
+    <h3>Using Generators</h3>
+    <pre><code>gen = (num ** 2 for num in range(10))
+
+# Iterate through
+for num in gen:
+    print(num)
+
+# Or use next()
+print(next(gen))  # 0
+print(next(gen))  # 1</code></pre>
+
+    <h3>Conditionals in Generators</h3>
+    <pre><code># Even squares
+even_squares = (num ** 2 for num in range(10) if num % 2 == 0)
+print(list(even_squares))  # [0, 4, 16, 36, 64]</code></pre>
+
+    <hr>
+
+    <h2>7. Generator Functions</h2>
+
+    <h3>yield vs return</h3>
+    <ul>
+        <li><code>return</code>: Returns a value and terminates the function</li>
+        <li><code>yield</code>: Returns a value but <strong>pauses</strong> the function, keeping state</li>
+    </ul>
+
+    <pre><code>def num_sequence(n):
+    """Generate values from 0 to n."""
+    i = 0
+    while i < n:
+        yield i
+        i += 1
+
+# Create generator
+gen = num_sequence(5)
+
+# Iterate
+for num in gen:
+    print(num)  # 0, 1, 2, 3, 4</code></pre>
+
+    <h3>Practical Example: Streaming Data</h3>
+    <pre><code>def read_large_file(file_object):
+    """Lazily read a file line by line."""
+    while True:
+        data = file_object.readline()
+        if not data:
+            break
+        yield data
+
+# Usage
+with open('huge_file.txt') as file:
+    gen = read_large_file(file)
+    print(next(gen))  # First line
+    print(next(gen))  # Second line</code></pre>
+
+    <hr>
+
+    <h2>8. Quick Reference</h2>
+
+    <h3>Iterator Operations</h3>
+    <table>
+        <tr><th>Function</th><th>Description</th></tr>
+        <tr><td><code>iter(iterable)</code></td><td>Create iterator from iterable</td></tr>
+        <tr><td><code>next(iterator)</code></td><td>Get next value from iterator</td></tr>
+        <tr><td><code>enumerate(iterable)</code></td><td>Returns (index, value) pairs</td></tr>
+        <tr><td><code>zip(*iterables)</code></td><td>Combine iterables into tuples</td></tr>
+    </table>
+
+    <h3>Comprehension Syntax</h3>
+    <pre><code># List comprehension
+[expression for item in iterable]
+[expression for item in iterable if condition]
+[expr1 if condition else expr2 for item in iterable]
+
+# Dict comprehension
+{key: value for item in iterable}
+
+# Generator expression
+(expression for item in iterable)</code></pre>
+
+    <h3>Generator Functions</h3>
+    <pre><code>def my_generator():
+    yield value1
+    yield value2
+    # ... state is preserved between yields</code></pre>
+
+    <hr>
+
+    <h2>Best Practices</h2>
+    <ol>
+        <li><strong>Use generators for large datasets</strong> - saves memory</li>
+        <li><strong>Use list comprehensions for small datasets</strong> - more readable</li>
+        <li><strong>Use enumerate() instead of range(len())</strong></li>
+        <li><strong>Use zip() to iterate over multiple sequences</strong></li>
+        <li><strong>Process large files in chunks</strong></li>
+        <li><strong>Use yield for streaming/lazy evaluation</strong></li>
+    </ol>
+
+    <hr>
+    <p><em>Notes compiled from DataCamp: Python Data Science Toolbox (Part 2)</em></p>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.querySelector('.theme-toggle');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                btn.textContent = '🌙 Dark Mode';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.textContent = '☀️ Light Mode';
+            }
+        }
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.setAttribute('data-theme', 'dark');
+            document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
+        }
+    </script>
+</body>
+</html>

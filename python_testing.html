@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Testing with Pytest and Unittest</title>
+    <style>
+        :root {
+            --bg-color: #ffffff; --text-color: #333333; --heading-color: #1a1a1a;
+            --code-bg: #f4f4f4; --code-text: #333; --border-color: #ddd;
+            --table-header-bg: #f0f0f0; --blockquote-bg: #f9f9f9;
+            --blockquote-border: #3498db; --link-color: #3498db;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e; --text-color: #e0e0e0; --heading-color: #ffffff;
+            --code-bg: #2d2d44; --code-text: #e0e0e0; --border-color: #444;
+            --table-header-bg: #2d2d44; --blockquote-bg: #252540;
+            --blockquote-border: #5dade2; --link-color: #5dade2;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.7; color: var(--text-color); background-color: var(--bg-color); padding: 20px; max-width: 900px; margin: 0 auto; transition: all 0.3s ease; }
+        .theme-toggle { position: fixed; top: 20px; right: 20px; padding: 10px 20px; border: none; border-radius: 25px; cursor: pointer; background-color: var(--code-bg); color: var(--text-color); font-size: 14px; z-index: 1000; }
+        h1 { color: var(--heading-color); font-size: 2.2em; margin: 30px 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
+        h2 { color: var(--heading-color); font-size: 1.6em; margin: 30px 0 15px 0; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+        h3 { color: var(--heading-color); font-size: 1.3em; margin: 25px 0 10px 0; }
+        p { margin: 15px 0; }
+        code { background-color: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 4px; font-family: 'Monaco', 'Consolas', monospace; font-size: 0.9em; }
+        pre { background-color: var(--code-bg); color: var(--code-text); padding: 15px; border-radius: 8px; overflow-x: auto; margin: 15px 0; border: 1px solid var(--border-color); }
+        pre code { padding: 0; background: none; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border: 1px solid var(--border-color); }
+        th { background-color: var(--table-header-bg); font-weight: 600; }
+        blockquote { background-color: var(--blockquote-bg); border-left: 4px solid var(--blockquote-border); padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        ul, ol { margin: 15px 0; padding-left: 30px; }
+        li { margin: 8px 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 30px 0; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+    <h1>Python Testing with Pytest and Unittest</h1>
+    <p>A comprehensive guide to testing in Python using pytest and unittest frameworks.</p>
+
+    <hr>
+
+    <h2>Introduction to Pytest</h2>
+
+    <h3>Basic Concepts</h3>
+    <ul>
+        <li><strong>Test function names</strong> must start with <code>test_</code> for pytest to recognize them</li>
+        <li>Pytest uses <code>assert</code> statements to verify expected outcomes</li>
+    </ul>
+
+    <h3>Running Tests</h3>
+    <pre><code># Run tests in a single file
+pytest test_file.py
+
+# Run all tests in a directory
+pytest test_dir/
+
+# Run tests matching a keyword (use -k flag)
+pytest tests.py -k 'squared'</code></pre>
+
+    <h3>Testing for Exceptions</h3>
+    <pre><code>import pytest
+
+def divide(a, b):
+    if b == 0:
+        raise ValueError("Cannot divide by zero")
+    return a / b
+
+def test_divide_by_zero():
+    with pytest.raises(ValueError):
+        divide(10, 0)</code></pre>
+
+    <hr>
+
+    <h2>Test Markers</h2>
+
+    <h3>Skip Marker</h3>
+    <pre><code>@pytest.mark.skip
+def test_feature_not_ready():
+    assert False  # This won't run</code></pre>
+
+    <h3>Conditional Skip (skipif)</h3>
+    <pre><code>import sys
+
+@pytest.mark.skipif('sys.version_info < (3, 9)')
+def test_requires_python_39():
+    assert True</code></pre>
+
+    <h3>Expected Failure (xfail)</h3>
+    <pre><code>@pytest.mark.xfail
+def test_known_bug():
+    assert 1 == 2  # xfailed (failed as expected)</code></pre>
+
+    <hr>
+
+    <h2>Fixtures</h2>
+    <p>Fixtures provide a prepared environment for test execution.</p>
+
+    <h3>Basic Fixture</h3>
+    <pre><code>import pytest
+
+@pytest.fixture
+def sample_data():
+    return [0, 2, 4, 6, 7, 8, 9, 5, 1]
+
+def test_list(sample_data):
+    assert len(sample_data) == 9
+    assert 5 in sample_data</code></pre>
+
+    <h3>Chaining Fixtures</h3>
+    <pre><code>@pytest.fixture
+def list_length():
+    return 10
+
+@pytest.fixture
+def prepare_list(list_length):
+    return [i for i in range(list_length)]
+
+def test_elements(prepare_list):
+    assert 9 in prepare_list</code></pre>
+
+    <h3>Autouse Fixtures</h3>
+    <pre><code>@pytest.fixture(autouse=True)
+def set_pd_options():
+    pd.set_option('display.max_columns', 5000)
+
+def test_pd_options():
+    assert pd.get_option('display.max_columns') == 5000</code></pre>
+
+    <h3>Fixture Teardowns</h3>
+    <pre><code>@pytest.fixture
+def prepare_data():
+    # Setup
+    data = [i for i in range(10)]
+    
+    # Yield the data to the test
+    yield data
+    
+    # Teardown (runs after test completes)
+    data.clear()
+    del data</code></pre>
+
+    <hr>
+
+    <h2>Types of Testing</h2>
+
+    <h3>1. Unit Testing</h3>
+    <p>Tests the <strong>smallest working parts</strong> of software (functions, methods, classes).</p>
+    <pre><code>def sum_of_arr(array: list) -> int:
+    return sum(array)
+
+def test_regular():
+    assert sum_of_arr([1, 2, 3]) == 6
+
+def test_empty():
+    assert sum_of_arr([]) == 0
+
+def test_one_number():
+    assert sum_of_arr([10]) == 10</code></pre>
+
+    <h3>2. Feature Testing</h3>
+    <p>Tests features from the <strong>user's perspective</strong>.</p>
+    <pre><code>def filter_data(df, company):
+    return df[df['company'] == company]
+
+def test_filter_feature():
+    filtered = filter_data(df, 'apple')
+    assert filtered['company'].nunique() == 1
+    assert filtered['company'].unique() == ['apple']</code></pre>
+
+    <h3>3. Integration Testing</h3>
+    <p>Verifies that <strong>different modules interact correctly</strong>.</p>
+    <pre><code>import os
+import pytest
+
+@pytest.fixture
+def setup_file():
+    with open('file.txt', 'w') as file:
+        file.write('test data')
+        yield file
+    os.remove('file.txt')
+
+def test_file_exists(setup_file):
+    assert os.path.exists('file.txt')</code></pre>
+
+    <h3>4. Performance Testing</h3>
+    <p>Measures <strong>efficiency</strong> of resource utilization.</p>
+    <pre><code># pip install pytest-benchmark
+
+def test_sleep(benchmark):
+    benchmark(time.sleep, 1)</code></pre>
+
+    <hr>
+
+    <h2>Unittest Framework</h2>
+
+    <h3>Key Features</h3>
+    <ul>
+        <li><strong>Built-in</strong> Python framework</li>
+        <li><strong>Object-oriented:</strong> Tests are methods within TestCase classes</li>
+        <li>Uses <strong>assertion methods</strong> instead of assert statements</li>
+    </ul>
+
+    <h3>Basic Structure</h3>
+    <pre><code>import unittest
+
+class TestSquared(unittest.TestCase):
+    def test_negative(self):
+        self.assertEqual((-3) ** 2, 9)</code></pre>
+
+    <h3>Assertion Methods</h3>
+    <table>
+        <tr><th>Method</th><th>Description</th></tr>
+        <tr><td><code>.assertEqual(a, b)</code></td><td>Check a == b</td></tr>
+        <tr><td><code>.assertNotEqual(a, b)</code></td><td>Check a != b</td></tr>
+        <tr><td><code>.assertTrue(x)</code></td><td>Check x is True</td></tr>
+        <tr><td><code>.assertFalse(x)</code></td><td>Check x is False</td></tr>
+        <tr><td><code>.assertIs(a, b)</code></td><td>Check a is b</td></tr>
+        <tr><td><code>.assertIsNone(x)</code></td><td>Check x is None</td></tr>
+        <tr><td><code>.assertIsInstance(a, type)</code></td><td>Check type of object</td></tr>
+        <tr><td><code>.assertIn(a, b)</code></td><td>Check a in b</td></tr>
+        <tr><td><code>.assertRaises(Exception)</code></td><td>Check exception is raised</td></tr>
+    </table>
+
+    <h3>Example</h3>
+    <pre><code>import unittest
+
+def func_factorial(number):
+    if number < 0:
+        raise ValueError('Factorial not defined for negatives')
+    factorial = 1
+    while number > 1:
+        factorial *= number
+        number -= 1
+    return factorial
+
+class TestFactorial(unittest.TestCase):
+    def test_positives(self):
+        self.assertEqual(func_factorial(5), 120)
+    
+    def test_zero(self):
+        self.assertEqual(func_factorial(0), 1)
+    
+    def test_negatives(self):
+        with self.assertRaises(ValueError):
+            func_factorial(-2)</code></pre>
+
+    <h3>CLI Commands</h3>
+    <pre><code># Run tests
+python3 -m unittest test_file.py
+
+# Run tests matching a pattern (-k)
+python3 -m unittest -k 'Squared' test_file.py
+
+# Verbose output (-v)
+python3 -m unittest -v test_file.py</code></pre>
+
+    <h3>Fixtures in Unittest</h3>
+    <ul>
+        <li><code>setUp()</code>: Runs <strong>before</strong> each test method</li>
+        <li><code>tearDown()</code>: Runs <strong>after</strong> each test method</li>
+    </ul>
+    <pre><code>class TestList(unittest.TestCase):
+    def setUp(self):
+        self.li = [i for i in range(100)]
+    
+    def tearDown(self):
+        self.li.clear()
+    
+    def test_list(self):
+        self.assertIn(99, self.li)
+        self.assertNotIn(100, self.li)</code></pre>
+
+    <hr>
+
+    <h2>Pytest vs Unittest</h2>
+    <table>
+        <tr><th>Feature</th><th>Pytest</th><th>Unittest</th></tr>
+        <tr><td>Test discovery</td><td><code>test_</code> prefix</td><td>Class inherits TestCase</td></tr>
+        <tr><td>Assertions</td><td><code>assert</code> statement</td><td><code>self.assertEqual()</code> etc.</td></tr>
+        <tr><td>Fixtures</td><td><code>@pytest.fixture</code></td><td><code>setUp()</code> / <code>tearDown()</code></td></tr>
+        <tr><td>Run command</td><td><code>pytest file.py</code></td><td><code>python -m unittest file.py</code></td></tr>
+        <tr><td>Markers</td><td><code>@pytest.mark.skip</code></td><td>Built-in decorators</td></tr>
+    </table>
+
+    <h2>Test Types Summary</h2>
+    <table>
+        <tr><th>Type</th><th>Scope</th><th>Purpose</th></tr>
+        <tr><td><strong>Unit</strong></td><td>Smallest parts</td><td>Verify individual components work</td></tr>
+        <tr><td><strong>Feature</strong></td><td>User-facing</td><td>Ensure features meet requirements</td></tr>
+        <tr><td><strong>Integration</strong></td><td>Module interaction</td><td>Verify modules work together</td></tr>
+        <tr><td><strong>Performance</strong></td><td>Efficiency</td><td>Measure resource utilization</td></tr>
+    </table>
+
+    <hr>
+
+    <h2>Best Practices</h2>
+    <ol>
+        <li><strong>Define test cases before writing test code</strong></li>
+        <li><strong>Use fixtures to avoid code duplication</strong></li>
+        <li><strong>Clean up resources in teardown</strong></li>
+        <li><strong>Use appropriate test types for different scenarios</strong></li>
+        <li><strong>Name test functions descriptively</strong></li>
+        <li><strong>Test edge cases</strong> (empty inputs, wrong types, boundary values)</li>
+        <li><strong>Keep tests independent</strong> - each test should be able to run alone</li>
+    </ol>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.querySelector('.theme-toggle');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                btn.textContent = '🌙 Dark Mode';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.textContent = '☀️ Light Mode';
+            }
+        }
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.setAttribute('data-theme', 'dark');
+            document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
+        }
+    </script>
+</body>
+</html>

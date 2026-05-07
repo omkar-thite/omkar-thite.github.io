@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joining Data in SQL - Complete Notes</title>
+    <style>
+        :root {
+            --bg-color: #ffffff; --text-color: #333333; --heading-color: #1a1a1a;
+            --code-bg: #f4f4f4; --code-text: #333; --border-color: #ddd;
+            --table-header-bg: #f0f0f0; --blockquote-bg: #f9f9f9;
+            --blockquote-border: #3498db; --link-color: #3498db;
+        }
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e; --text-color: #e0e0e0; --heading-color: #ffffff;
+            --code-bg: #2d2d44; --code-text: #e0e0e0; --border-color: #444;
+            --table-header-bg: #2d2d44; --blockquote-bg: #252540;
+            --blockquote-border: #5dade2; --link-color: #5dade2;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.7; color: var(--text-color); background-color: var(--bg-color); padding: 20px; max-width: 900px; margin: 0 auto; transition: all 0.3s ease; }
+        .theme-toggle { position: fixed; top: 20px; right: 20px; padding: 10px 20px; border: none; border-radius: 25px; cursor: pointer; background-color: var(--code-bg); color: var(--text-color); font-size: 14px; z-index: 1000; }
+        h1 { color: var(--heading-color); font-size: 2.2em; margin: 30px 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
+        h2 { color: var(--heading-color); font-size: 1.6em; margin: 30px 0 15px 0; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+        h3 { color: var(--heading-color); font-size: 1.3em; margin: 25px 0 10px 0; }
+        h4 { color: var(--heading-color); font-size: 1.1em; margin: 20px 0 10px 0; }
+        p { margin: 15px 0; }
+        code { background-color: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 4px; font-family: 'Monaco', 'Consolas', monospace; font-size: 0.9em; }
+        pre { background-color: var(--code-bg); color: var(--code-text); padding: 15px; border-radius: 8px; overflow-x: auto; margin: 15px 0; border: 1px solid var(--border-color); }
+        pre code { padding: 0; background: none; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border: 1px solid var(--border-color); }
+        th { background-color: var(--table-header-bg); font-weight: 600; }
+        blockquote { background-color: var(--blockquote-bg); border-left: 4px solid var(--blockquote-border); padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        ul, ol { margin: 15px 0; padding-left: 30px; }
+        li { margin: 8px 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 30px 0; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+
+    <h1>Joining Data in SQL - Complete Notes</h1>
+    <blockquote>
+        <p>Comprehensive revision notes for SQL JOINs, Set Operations, and Subqueries</p>
+    </blockquote>
+
+    <hr>
+
+    <h2>1. INNER JOIN</h2>
+
+    <h3>What is a JOIN?</h3>
+    <ul>
+        <li>JOINs enable combining data from separate tables into meaningful result sets</li>
+        <li>A <strong>key</strong> is a single column or group of columns that uniquely identifies records in a table</li>
+        <li>You can JOIN on key fields or any other field</li>
+    </ul>
+
+    <h3>How INNER JOIN Works</h3>
+    <ul>
+        <li>Returns <strong>only records that match</strong> on the joining field in <strong>both</strong> tables</li>
+        <li>Records without matches in either table are <strong>discarded</strong></li>
+        <li>Matched records are combined into a single row with columns from both tables</li>
+    </ul>
+
+    <h3>Basic Syntax</h3>
+    <pre><code>SELECT 
+    table1.column,
+    table2.column
+FROM table1
+INNER JOIN table2
+ON table1.key = table2.key;</code></pre>
+
+    <h3>Key Points</h3>
+    <table>
+        <tr><th>Concept</th><th>Description</th></tr>
+        <tr><td>Ambiguous columns</td><td>When a column exists in both tables, use <code>table.column</code> format</td></tr>
+        <tr><td>Table aliases</td><td>Use <code>AS</code> keyword to shorten table names</td></tr>
+        <tr><td><code>USING</code> keyword</td><td>When joining on identical column names: <code>USING(column_name)</code></td></tr>
+    </table>
+
+    <h3>Examples</h3>
+    <pre><code>-- Basic INNER JOIN
+SELECT 
+    presidents.country,
+    prime_minister,
+    president
+FROM presidents
+INNER JOIN prime_ministers
+ON presidents.country = prime_ministers.country;
+
+-- With Aliases
+SELECT p1.country, president, prime_minister
+FROM presidents AS p1
+INNER JOIN prime_ministers AS p2
+ON p1.country = p2.country;
+
+-- Using USING Keyword
+SELECT p1.country, president, prime_minister
+FROM presidents p1
+INNER JOIN prime_ministers AS p2
+USING(country);</code></pre>
+
+    <h3>Multiple JOINs</h3>
+    <pre><code>SELECT *
+FROM left_table
+INNER JOIN right_table ON left_table.id = right_table.id
+INNER JOIN another_table ON left_table.id = another_table.id;</code></pre>
+
+    <h3>Joining on Multiple Conditions</h3>
+    <pre><code>SELECT * 
+FROM left_table
+INNER JOIN right_table
+ON left_table.id = right_table.id
+    AND left_table.date = right_table.date;</code></pre>
+
+    <hr>
+
+    <h2>2. Outer JOINs</h2>
+
+    <h3>LEFT JOIN</h3>
+    <ul>
+        <li>Returns <strong>all records from the left table</strong></li>
+        <li>Returns matching records from the right table</li>
+        <li>Assigns <code>NULL</code> for right table columns where no match exists</li>
+    </ul>
+    <pre><code>SELECT p1.country, prime_minister, president
+FROM prime_ministers AS p1
+LEFT JOIN presidents AS p2
+USING(country);</code></pre>
+
+    <h3>RIGHT JOIN</h3>
+    <ul>
+        <li>Returns <strong>all records from the right table</strong></li>
+        <li>Returns matching records from the left table</li>
+        <li>Assigns <code>NULL</code> for left table columns where no match exists</li>
+    </ul>
+
+    <h3>FULL JOIN</h3>
+    <ul>
+        <li>Combines LEFT JOIN and RIGHT JOIN</li>
+        <li>Returns <strong>all records from both tables</strong></li>
+        <li>Assigns <code>NULL</code> where matches aren't found on either side</li>
+    </ul>
+
+    <h3>Visual Comparison</h3>
+    <table>
+        <tr><th>JOIN Type</th><th>Left Table Records</th><th>Right Table Records</th><th>NULLs</th></tr>
+        <tr><td>INNER JOIN</td><td>Only matched</td><td>Only matched</td><td>None</td></tr>
+        <tr><td>LEFT JOIN</td><td>All</td><td>Only matched</td><td>Right side</td></tr>
+        <tr><td>RIGHT JOIN</td><td>Only matched</td><td>All</td><td>Left side</td></tr>
+        <tr><td>FULL JOIN</td><td>All</td><td>All</td><td>Both sides</td></tr>
+    </table>
+
+    <hr>
+
+    <h2>3. CROSS JOIN</h2>
+    <ul>
+        <li>Creates <strong>all possible combinations</strong> of records from two tables</li>
+        <li>Also called a Cartesian product</li>
+        <li>Does <strong>NOT</strong> require <code>ON</code> or <code>USING</code> clause</li>
+    </ul>
+
+    <pre><code>SELECT id1, id2
+FROM table_1
+CROSS JOIN table_2;</code></pre>
+
+    <blockquote>
+        <p>💡 <strong>Use case:</strong> Explore all possible combinations, such as historical language possibilities between countries.</p>
+    </blockquote>
+
+    <hr>
+
+    <h2>4. Self JOIN</h2>
+    <ul>
+        <li>Table joined with <strong>itself</strong></li>
+        <li>Used to compare values within the same table</li>
+        <li><strong>Aliasing is required</strong></li>
+    </ul>
+
+    <pre><code>-- Find Country Pairs in Same Continent
+SELECT
+    p1.country AS country1,
+    p2.country AS country2,
+    p1.continent	
+FROM prime_ministers AS p1
+INNER JOIN prime_ministers AS p2
+ON p1.continent = p2.continent
+    AND p1.country &lt;&gt; p2.country;  -- Exclude self-pairs</code></pre>
+
+    <hr>
+
+    <h2>5. Set Operations</h2>
+    <p>Set operations stack records on top of each other (unlike JOINs which add columns side by side).</p>
+
+    <h3>Requirements</h3>
+    <table>
+        <tr><th>Requirement</th><th>Description</th></tr>
+        <tr><td>Same number of columns</td><td>Both queries must SELECT the same number of columns</td></tr>
+        <tr><td>Matching data types</td><td>Corresponding columns must have compatible data types</td></tr>
+        <tr><td>Field names</td><td>Result uses field names from the <strong>first</strong> query</td></tr>
+    </table>
+
+    <h3>UNION</h3>
+    <p>Combines records from two tables. <strong>Removes duplicates</strong>.</p>
+    <pre><code>SELECT monarch AS leader, country FROM monarchs
+UNION
+SELECT prime_minister, country FROM prime_ministers;</code></pre>
+
+    <h3>UNION ALL</h3>
+    <p>Combines records from two tables. <strong>Keeps duplicates</strong>.</p>
+
+    <h3>INTERSECT</h3>
+    <p>Returns only records that appear in <strong>both</strong> tables.</p>
+    <pre><code>SELECT country FROM prime_ministers
+INTERSECT
+SELECT country FROM presidents;</code></pre>
+
+    <h3>EXCEPT</h3>
+    <p>Returns records from the first table that are <strong>NOT</strong> in the second table.</p>
+    <pre><code>SELECT monarch, country FROM monarchs
+EXCEPT
+SELECT prime_minister, country FROM prime_ministers;</code></pre>
+
+    <h3>Set Operations Summary</h3>
+    <table>
+        <tr><th>Operation</th><th>Returns</th><th>Duplicates</th></tr>
+        <tr><td>UNION</td><td>All records from both</td><td>Removed</td></tr>
+        <tr><td>UNION ALL</td><td>All records from both</td><td>Kept</td></tr>
+        <tr><td>INTERSECT</td><td>Common records only</td><td>Removed</td></tr>
+        <tr><td>EXCEPT</td><td>Left minus right</td><td>Removed</td></tr>
+    </table>
+
+    <hr>
+
+    <h2>6. Semi JOINs and Anti JOINs</h2>
+    <p>These are <strong>not additive</strong> - they don't add columns, only filter rows.</p>
+
+    <h3>Semi JOIN</h3>
+    <p>Returns records from the first table where a <strong>condition IS met</strong> in the second table.</p>
+    <pre><code>SELECT country, continent, president
+FROM presidents 
+WHERE country IN 
+    (SELECT country FROM states WHERE indep_year < 1800);</code></pre>
+
+    <h3>Anti JOIN</h3>
+    <p>Returns records from the first table where a <strong>condition is NOT met</strong> in the second table.</p>
+    <pre><code>SELECT country, continent, president
+FROM presidents
+WHERE continent LIKE '%America'
+    AND country NOT IN 
+        (SELECT name FROM states WHERE indep_year < 1800);</code></pre>
+
+    <table>
+        <tr><th>Type</th><th>Filter Keyword</th><th>Returns</th></tr>
+        <tr><td>Semi JOIN</td><td><code>IN</code></td><td>Rows that match subquery</td></tr>
+        <tr><td>Anti JOIN</td><td><code>NOT IN</code></td><td>Rows that don't match subquery</td></tr>
+    </table>
+
+    <hr>
+
+    <h2>7. Subqueries</h2>
+    <p>Queries nested inside other queries.</p>
+
+    <h3>Subqueries in WHERE</h3>
+    <pre><code>SELECT *
+FROM populations
+WHERE year = 2015
+    AND life_expectancy > 1.15 *
+        (SELECT AVG(life_expectancy) FROM populations WHERE year = 2015);</code></pre>
+
+    <h3>Subqueries in SELECT</h3>
+    <p>⚠️ <strong>Requires an alias!</strong></p>
+    <pre><code>SELECT
+    DISTINCT continent,
+    (SELECT COUNT(*) FROM monarchs
+     WHERE monarchs.continent = states.continent) AS monarch_count
+FROM states;</code></pre>
+
+    <h3>Subqueries in FROM</h3>
+    <pre><code>SELECT local_name, sub.lang_num
+FROM countries, 
+    (SELECT code, COUNT(*) AS lang_num
+     FROM languages GROUP BY code) AS sub
+WHERE countries.code = sub.code
+ORDER BY lang_num DESC;</code></pre>
+
+    <hr>
+
+    <h2>Quick Reference: Choosing the Right JOIN</h2>
+    <table>
+        <tr><th>Scenario</th><th>Use</th></tr>
+        <tr><td>Only matching records from both tables</td><td>INNER JOIN</td></tr>
+        <tr><td>All records from left, matching from right</td><td>LEFT JOIN</td></tr>
+        <tr><td>All records from right, matching from left</td><td>RIGHT JOIN</td></tr>
+        <tr><td>All records from both tables</td><td>FULL JOIN</td></tr>
+        <tr><td>All combinations of records</td><td>CROSS JOIN</td></tr>
+        <tr><td>Compare records within same table</td><td>Self JOIN</td></tr>
+        <tr><td>Combine rows vertically (no duplicates)</td><td>UNION</td></tr>
+        <tr><td>Combine rows vertically (with duplicates)</td><td>UNION ALL</td></tr>
+        <tr><td>Find common records</td><td>INTERSECT</td></tr>
+        <tr><td>Find records in first but not second</td><td>EXCEPT</td></tr>
+        <tr><td>Filter based on existence in another table</td><td>Semi JOIN (IN)</td></tr>
+        <tr><td>Filter based on non-existence</td><td>Anti JOIN (NOT IN)</td></tr>
+    </table>
+
+    <hr>
+    <p><em>Good luck with your exam! 🚀</em></p>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.querySelector('.theme-toggle');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                btn.textContent = '🌙 Dark Mode';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.textContent = '☀️ Light Mode';
+            }
+        }
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.setAttribute('data-theme', 'dark');
+            document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
+        }
+    </script>
+</body>
+</html>
