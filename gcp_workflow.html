@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCP VM & MLflow Setup Notes</title>
+    <style>
+        :root {
+            --bg-body: #f9f9f9;
+            --bg-main: #fff;
+            --text-main: #333;
+            --text-heading: #2c3e50;
+            --color-link: #0366d6;
+            --bg-code: #f3f4f6;
+            --border-code: #e5e7eb;
+            --bg-note: #e8f4fd;
+            --border-note: #1976d2;
+            --btn-bg: #e2e8f0;
+            --btn-text: #1e293b;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #121212;
+            --bg-main: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-heading: #ffffff;
+            --color-link: #66b3ff;
+            --bg-code: #2d2d2d;
+            --border-code: #444444;
+            --bg-note: #1a2c42;
+            --border-note: #66b3ff;
+            --btn-bg: #334155;
+            --btn-text: #f8fafc;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            color: var(--text-main);
+            background-color: var(--bg-body);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        #theme-toggle {
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        #theme-toggle:hover {
+            opacity: 0.9;
+        }
+
+        main {
+            background-color: var(--bg-main);
+            padding: 2rem 3rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
+        }
+        h1, h2, h3 {
+            color: var(--text-heading);
+            margin-top: 1.5em;
+        }
+        p {
+            margin-bottom: 1em;
+        }
+        ul {
+            margin-bottom: 1em;
+        }
+        li {
+            margin-bottom: 0.5em;
+        }
+        a {
+            color: var(--color-link);
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-code);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: var(--bg-code);
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid var(--border-code);
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 0.9em;
+        }
+        .intro-note {
+            background-color: var(--bg-note);
+            border-left: 4px solid var(--border-note);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 0 4px 4px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <h1>GCP & MLflow Notes</h1>
+        <button id="theme-toggle">Toggle Dark Mode</button>
+    </div>
+    
+    <main>
+        <div class="intro-note">
+            <p>This are notes that I had taken while configuring VM on GCP, running mlflow server in it, and connecting it to my local Vs code.</p>
+            <p>These notes were written in 2025, so some GCP Console UI details and links may have changed. I'm running Windows 11 with WSL2 for development, and the terminal commands assume you're using PowerShell in VS Code.</p>
+        </div>
+
+        <h3>Download and Install <a href="https://cloud.google.com/sdk/docs/install" target="_blank">Google cloud SDK</a></h3>
+        <p>Log in to your google account if not already using <code>gcloud init</code>.</p>
+        <p>This displays a link to log in page or directly opens up a browser window for log in.<br>
+        Log in to your google account credentials.</p>
+        <p>This command is used for the initial setup and configuration of your gcloud CLI. It not only authenticates your account but also guides you through other common setup steps.</p>
+        <p>Use <code>gcloud auth login</code> when you only need to re-authenticate your gcloud CLI session (e.g., if your credentials expire) or switch to a different authenticated account without changing other configuration settings. It's a quick way to ensure your gcloud commands are running with the correct permissions.<br>
+        This command gets your OAuth2 credentials and saves them locally.</p>
+        <p>Go to Google Cloud Console, Select your project.</p>
+
+        <h3>Create the VM using Console (Web UI)</h3>
+        <p>Navigation bar -> Compute Engine -> VM instances -> Create Instance</p>
+        <ul>
+            <li>Name : Name of instance (eg mlflow-server)</li>
+            <li>Region: Region in which you want VM to live. Select one appropriately.</li>
+            <li>Zone: Select appropriate zone</li>
+            <li>Select machine type (e2-medium is good enough for developement, you can customize RAM)</li>
+        </ul>
+        <p>Go to Left Panel</p>
+        <ul>
+            <li>OS and Storage
+                <ul>
+                    <li>All defualts are good, click change if you want to change something.</li>
+                    <li>eg. Operating system: Ubuntu, size of disk (10 GB is enough), etc.</li>
+                </ul>
+            </li>
+            <li>Network tab:
+                <ul>
+                    <li>Deselect all Allow HTTP traffic, Allow HTTPS traffic, Allow Load Balancer Health Checks.</li>
+                    <li>Add network tag (eg ssh-access, mlflow-server, etc): this comes handy later in selecting VM based on tag while creating a firewall rule.</li>
+                    <li>Network interface: Select default network</li>
+                </ul>
+            </li>
+            <li>Security
+                <ul>
+                    <li>Access scopes -> Select <em>Set access for each API</em> (to give least privilege to VM)
+                        <ul>
+                            <li>Enable for Cloud SQl, Storage (Full).</li>
+                            <li>Note: These are the least necessary for mlflow development, if running any extra application that requires other resources like Bigquery, Modify access scope accordingly.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <p>Manage Aceess</p>
+        <ul>
+            <li>Check <code>Control VM access through IAM permissions.</code></li>
+        </ul>
+        <p>Other default settings are good enough.</p>
+        <ul>
+            <li>Click Create</li>
+        </ul>
+
+        <h3>Enable os login</h3>
+        <p>After creating a VM, Go to<br>
+        Compute Engine -> VM instances -> your instance -> Edit<br>
+        Add to metadata:</p>
+<pre><code>enable-osconfig : TRUE
+enable-oslogin : TRUE</code></pre>
+        <p>Note:<br>
+        Google attaches a service account to newly created instance.<br>
+        This account acts like an authentication API for VM.<br>
+        You can create new service accounts explicitly for other resources in <code>Security -> Service account</code> section.</p>
+
+        <h3>Reserve internal IP of VM instance</h3>
+        <p>By default IP of VM change when stopped or restarted, to make it fix you have to 'reserve' it:<br>
+        Go to Navigation bar -> VPC Network -> ip addresses<br>
+        Locate VM's internal IP address, click on 3 dots (actions) and click <code>Promote to Static IP address</code>.</p>
+
+        <h3>Create a PostgreSQL instance</h3>
+        <p>Navigation bar-> Cloud SQL -> Instances -> Create Instance -> Choose PostgreSQL -> Fill options accordingly.</p>
+        <ul>
+            <li>Select Enterprise</li>
+            <li>Select Editor Preset -> Sandbox for experimental work.</li>
+            <li>Instance ID is name of your instance.</li>
+            <li>Set passoword for default user postgres.
+                <ul>
+                    <li>Choose strong password. Don't let @ be in password or use URL-encoding.</li>
+                    <li>You can create other users and databases within this instance later through console.</li>
+                </ul>
+            </li>
+            <li>Choose zone, its better to have SQL instance in same zone as VM.</li>
+            <li>Machine : Dedicated 1 vCPU, 3.75 GB is good enough.</li>
+            <li>Storage: Default SSD 10 GB is enough</li>
+            <li>Connections: Uncheck public ip, check Private IP and select <code>default</code> network.
+                <ul>
+                    <li>Having default network to which VM is also connected allows easy connectivity between the two without firewall rule.</li>
+                    <li>This way your SQL instance is not open to internet and only listens to default network.</li>
+                </ul>
+            </li>
+            <li>Enable Private Path</li>
+            <li>Enable Vertex AI Integration in Flags and paramters (optional).</li>
+            <li>Click Create Instance</li>
+        </ul>
+
+        <h3>Create a bucket to store artifatcs</h3>
+        <p>Navigation bar -> Cloud Stoarge -> Buckets -> Create</p>
+        <ul>
+            <li>Name: Should be globally unique, better prefix with your project_id (eg project-name-123456-artifacts).</li>
+            <li>Label (optional, to identify bucket)</li>
+            <li>Choose where to store your data:
+                <ul>
+                    <li>Select Region -> Your VM's region (its better if both bucket and VM live in same region).</li>
+                </ul>
+            </li>
+            <li>Choose how to store data: Select according to use case, Standard is good enough for development.</li>
+            <li>Check Enable Hierarchical namespace on this bucket (optional)</li>
+            <li>Choose how to control access to objects.
+                <ul>
+                    <li>Check Enforce public access prevention on this bucket.</li>
+                    <li>Access control: Uniform is good enough</li>
+                </ul>
+            </li>
+            <li>Choose how to protect object data: Defaults are good enough.</li>
+        </ul>
+        <p>We set bucket as artifact storage later.</p>
+
+        <h3>Enable IAP <a href="https://cloud.google.com/iap/docs/using-tcp-forwarding" target="_blank">[source]</a></h3>
+        <p>Security -> IAP (Identity Aware Proxy) -> SSH AND TCP RESOURCES tab</p>
+        <p>-> Select your VM instance, this will open info panel on right side.<br>
+        -> Click ADD PRINCIPAL.<br>
+        -> New Principles: Enter your google account id (your gmail id)<br>
+        -> Assign Roles : Cloud IAP -> IAP Secured Tunnel User<br>
+        -> Click save.</p>
+        <p>If you want to give any other user access to VM thorugh IAP, give that user permission similarly.</p>
+
+        <h3>Allow traffic from IAP to VM</h3>
+        <p>Create new firewall rule:</p>
+        <ul>
+            <li>Enter IPV4 source range <code>35.235.240.0/20</code> (IAP's range)</li>
+            <li>target: VM tags or it's service account. (tags are preferred)</li>
+            <li>Allow Ingress: tcp : 5000 (mlflow), 22 (ssh), and all tcp ports if IAP requires.</li>
+            <li>Allow all tcp only if IAP requires (as specified in console), otherwise its NOT RECOMMENDED.</li>
+            <li>To allow all tcp ports, just check tcp and don't enter any value for port.</li>
+            <li>Priority of ports 22, 5000 should be lower (say 50) than all tcp rule (say 100). (Lower priority dominates.)</li>
+        </ul>
+
+        <h3>Grant access by assigning roles</h3>
+        <p>Navigation bar -> IAM</p>
+        <ul>
+            <li>Select VM sevice account -> Edit button (on right side).
+                <ul>
+                    <li>Assign following roles: Storage Object Reader and Writer (To handle Bucket operations)</li>
+                </ul>
+            </li>
+            <li>Select your google account
+                <ul>
+                    <li>Assign Compute Instance Admin (v1), IAP-secured Tunnel User, Compute OS Admin Login (To login as a admin user with sudo previlege)
+                        <ul>
+                            <li>For standard user without sudo previlege, assign Compute OS Login instead of Compute OS Admin Login. (but not both simultaneously).</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <p>Now on Local VS code or powershell:</p>
+        <ol>
+            <li>Make sure OpenSSH client is installed.</li>
+            <li>Make sure gcloud.cmd is in PATH system environment variable.<br>
+            Take help of LLM's on how to do this on your system.</li>
+        </ol>
+
+        <h3>Connect to VM using Remote-SSH extension</h3>
+        <p>Install Remote-SSH extention in VS code if not already installed.</p>
+        <p>1. connect via ssh:<br>
+        Enter this command in powershell</p>
+<pre><code>gcloud compute ssh &lt;VM-NAME&gt; --tunnel-through-iap --zone=&lt;zone&gt;  --project "&lt;PROJECT-ID&gt;"</code></pre>
+        <p>This makes a IAP tunnel between your device and VM and connects them using ssh.<br>
+        A username is given to you based on your google id, eg if google id is "user.example@gmail.com" then username will be "user_example_gmail_com".<br>
+        Take note of this username.<br>
+        This also creates a SSH key for you.</p>
+        <p>2. Create config file in folder where key is created.<br>
+        Add below line to config file</p>
+<pre><code>Host &lt;alias&gt;  # give any name eg. my-instance
+    User &lt;your-username-on-gcp&gt;  # eg user_example_gmail_com
+    IdentityFile &lt;Path to private key generated in above step&gt;  
+    ProxyCommand "&lt;path to gcloud.cmd&gt;" compute start-iap-tunnel &lt;VM-NAME&gt; &lt;PORT&gt; --listen-on-stdin \
+            --project=&lt;project-id&gt; --zone=&lt;your-instance-zone&gt;</code></pre>
+        <p>Note : Don't forget to add <code>--listen-on-stdin.</code><br>
+        Select port 22 for ssh.</p>
+        <p>This will connect VM to VS code as remote, allowing you to work on VM as if you are working on local machine.<br>
+        Ports are automatically forwarded for you.</p>
+        <p>After you are in VM, install python and mlflow.</p>
+<pre><code>sudo apt update
+sudo apt install python3 python3-pip
+
+pip3 install mlflow psycopg2-binary
+pip install google-cloud-storage</code></pre>
+
+        <h3>start mlflow server</h3>
+<pre><code>mlflow server \
+    --backend-store-uri "postgresql://postgres:&lt;your_postgres_password&gt;@&lt;cloud_sql_private_ip&gt;:5432/&lt;database-name&gt;" \
+    --default-artifact-root="gs://bucket-name"</code></pre>
+        <p>Alternatively you can export these arguments as environment variables in bashrc file:</p>
+<pre><code>nano ~/.bashrc
+
+# Add below lines at end of file
+export MLFLOW_TRACKING_URI="postgresql://postgres:&lt;your_postgres_password&gt;@&lt;cloud_sql_private_ip&gt;:5432/&lt;database-name&gt;"
+export MLFLOW_ARTIFACT_ROOT="gs://bucket-name"
+
+# Save file and execute below command
+source ~/.bashrc
+
+# Then run this
+mlflow server --backend-store-uri=$MLFLOW_TRACKING_URI --default-artifact-root=$MLFLOW_ARTIFACT_ROOT</code></pre>
+        <p>Private ip of SQL instance can be found on Console.<br>
+        database-name: Name of database, see cloud console -> SQL client -> your-sql-database -> databases (on left panel).<br>
+        default database is postgres.</p>
+        <p>This will start mlflow server on port 5000. Open it in local browser.</p>
+        <p>If above option does not work, you can <strong>manually create an IAP tunnel between ports of VM and your local machine.</strong></p>
+
+        <h3>Manually create an IAP tunnel between ports of VM and local machine.</h3>
+        <p>1. SSH into VM</p>
+<pre><code>gcloud compute ssh &lt;VM-NAME&gt; --tunnel-through-iap --zone=&lt;zone&gt;  --project "&lt;PROJECT-ID&gt;"</code></pre>
+        <p>Install mlflow and required packages.</p>
+        <p>2. Start mlflow server<br>
+        export variables in bashrc file as shown above.</p>
+<pre><code>mlflow server --backend-store-uri=$MLFLOW_TRACKING_URI --default-artifact-root=$MLFLOW_ARTIFACT_ROOT</code></pre>
+
+        <h3>Tunnel VM's port 5000 to your local machine's 5000 port using start-iap-tunnel:</h3>
+        <ul>
+            <li>Start iap tunnel between ports:<br>
+            In local VS code, in new powershell:</li>
+        </ul>
+<pre><code>gcloud compute start-iap-tunnel &lt;VM_NAME&gt; 5000 --local-host-port=localhost:5000 --project=&lt;project-id&gt; --zone=&lt;zone&gt;</code></pre>
+        <p>After this command terminal displays</p>
+<pre><code>Testing if tunnel connection works.
+Listening on port [5000].</code></pre>
+        <p>and freezes, means tunnel has been made. Open localhost:5000 port in your browser now to see mlflow ui.</p>
+        <p>Create new shell, ssh into VM using <code>gcloud compute ssh</code> as above to execute any other scripts in VM.</p>
+    </main>
+
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        
+        // Check for saved theme preference or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeToggleBtn.textContent = 'Toggle Light Mode';
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            let targetTheme = 'light';
+            
+            if (currentTheme !== 'dark') {
+                targetTheme = 'dark';
+                themeToggleBtn.textContent = 'Toggle Light Mode';
+            } else {
+                themeToggleBtn.textContent = 'Toggle Dark Mode';
+            }
+            
+            document.documentElement.setAttribute('data-theme', targetTheme);
+            localStorage.setItem('theme', targetTheme);
+        });
+    </script>
+</body>
+</html>
